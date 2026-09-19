@@ -7,20 +7,57 @@ node_modules/
 # Git worktrees
 .worktrees/
 
-# Environment files (contain secrets)
+# Environment files and local secrets
 .env
-.env.local
-*/.env
-*/.env.local
+.env.*
+**/.env
+**/.env.*
+*.env
 nas.env
+README-nk.md
+
+# Allow sanitized templates to be committed
+!.env.example
+!.env.*.example
+!**/.env.example
+!**/.env.*.example
 
 # Build outputs
 dist/
 .next/
 build/
+coverage/
+*.tsbuildinfo
+.nyc_output/
+playwright-report/
+test-results/
+blob-report/
 
-# Uploads (user data)
+# Docker/runtime data and user uploads
 uploads/
+backups/
+data/
+postgres-data/
+postgres_data/
+pgdata/
+.docker/
+
+# Machine-specific Docker Compose overrides
+docker-compose.override.yml
+docker-compose.*.override.yml
+docker-compose.local.yml
+docker-compose.*.local.yml
+
+# Temporary files and caches
+.cache/
+.tmp/
+tmp/
+temp/
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
 
 # macOS
 .DS_Store
@@ -36,6 +73,19 @@ uploads/
 # Database backups (may contain real data)
 *.backup.sql
 inventory-backup.sql
+inventory-backup-*.zip
+*.backup
+*.dump
+*.dump.gz
+*.sql.gz
+
+# Local secret/certificate material
+secrets/
+*.secret
+*.pem
+*.key
+*.p12
+*.pfx
 
 # Personal deployment configs
 docker-compose.nas.yml
