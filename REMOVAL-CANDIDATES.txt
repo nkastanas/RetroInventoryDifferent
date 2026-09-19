@@ -1,0 +1,263 @@
+RETROINVENTORYDIFFERENT REMOVAL CANDIDATES
+===========================================
+
+Review date: 2026-09-19
+Reviewed baseline: eb5b70c (refactor/minimal-core)
+
+Purpose
+-------
+This is a review report only. No files listed here have been deleted.
+
+The classifications matter:
+
+  SAFE NOW     Generated, personal, empty, boilerplate, or unreferenced files.
+  VERIFY FIRST Apparently orphaned code; remove only with its tests and verify a build.
+  OPTIONAL     A working product area that can be removed only if the fork does not need it.
+  REPLACE      Remove only after its replacement is present and documented.
+  KEEP         Files that may look old or generated but are required or valuable.
+
+A directory pattern such as "retro/**" means every tracked file below that directory.
+
+
+1. SAFE TO REMOVE NOW
+---------------------
+
+.windsurf/workflows/plan.md
+  Empty editor-workflow file. It contains no project instructions or executable logic.
+
+showcase/tsconfig.tsbuildinfo
+  Generated TypeScript incremental-build cache. It is reproducible and is now ignored.
+
+ios/InventoryDifferent/InventoryDifferent.xcodeproj/xcuserdata/wottle.xcuserdatad/xcdebugger/Breakpoints_v2.xcbkptlist
+  Developer-specific Xcode breakpoint state from the upstream author. It is not project
+  source and xcuserdata/ is now ignored.
+
+web/public/file.svg
+web/public/globe.svg
+web/public/next.svg
+web/public/vercel.svg
+web/public/window.svg
+  Unreferenced Create Next App starter artwork. Repository-wide reference searches found
+  no production, test, CSS, or documentation use.
+
+web/README.md
+  Generic Create Next App boilerplate rather than documentation for this repository.
+  The root README files should remain the authoritative project documentation.
+
+
+2. APPARENTLY ORPHANED WEB CODE — VERIFY BEFORE REMOVAL
+-------------------------------------------------------
+
+web/src/components/DeviceCard.tsx
+web/tests/components/DeviceCard.test.tsx
+  The production application uses DeviceCardNew from the list-new route. The older
+  DeviceCard is referenced only by its own test. Delete the implementation and test
+  together, then run the web typecheck, tests, and production build.
+
+web/src/components/DeviceTable.tsx
+  No import or runtime use was found. The active application uses DeviceTableNew.
+  Remove only after a web typecheck, tests, and production build confirm there is no
+  dynamic or convention-based dependency.
+
+
+3. OPTIONAL APPLICATIONS — REMOVE ONLY BY PRODUCT DECISION
+-----------------------------------------------------------
+
+These are not junk. They are working, separately deployable parts of the upstream
+product. Removing one requires updating Compose, CI, publishing workflows, root scripts,
+and documentation in the same change.
+
+retro/**
+  Optional vintage/no-JavaScript browser interface. If the fork will only use the main
+  web UI, the whole directory can be removed. Also remove its services/references from
+  Docker Compose, image publishing, and documentation.
+
+mcp-server/**
+  Optional MCP/AI-assistant server. Remove only if this integration is out of scope.
+  Also remove the root test:mcp script, MCP CI job, Compose services, image-publishing
+  entries, and documentation references.
+
+storefront/**
+  Optional public catalogue/storefront. Remove only if public browsing, sale listings,
+  and wish-list presentation are out of scope. A coordinated removal must also address:
+
+    e2e/storefront-browse.spec.ts
+    storefront entries in docker-compose*.yml
+    storefront typecheck/E2E steps in .github/workflows/test.yml
+    storefront image jobs in .github/workflows/publish.yml and retag.yml
+    storefront references in README.md and DEPLOYMENT.md
+
+  Do not automatically delete API sale/list-price fields merely because the client is
+  removed; the main inventory UI may still use that data.
+
+showcase/**
+  Optional editorial showcase application. Remove only if curated public collections
+  are out of scope. A coordinated removal must also consider:
+
+    design/web/showcase/**
+    showcase/exports/apple-laptops.json
+    showcase entries in docker-compose*.yml
+    showcase jobs in .github/workflows/test.yml, publish.yml, and retag.yml
+    showcase references in README.md and DEPLOYMENT.md
+
+  The API and database contain showcase models, resolvers, defaults, and import/export
+  endpoints. Removing the client does not make existing Prisma migrations removable.
+  Any current schema removal needs a new migration after a verified backup.
+
+ios/**
+  Optional native iOS application. Remove only if the fork will have no iOS client.
+  A coordinated removal should also consider:
+
+    design/ios/**
+    tools/test-barcodes.html
+    web/public/.well-known/apple-app-site-association
+    web/src/components/DeepLinkBanner.tsx
+
+  The last two files support iOS universal links and should remain if deep-link behavior
+  will still be used. Remove iOS references from documentation as part of the same change.
+
+
+4. OPTIONAL HISTORICAL AND CONTRIBUTOR-SPECIFIC MATERIAL
+--------------------------------------------------------
+
+design/**
+  Design snapshots and mockups rather than runtime dependencies. Remove if the fork does
+  not need upstream design history. If showcase or iOS is retained, their design material
+  may still be useful and can instead be pruned selectively.
+
+docs/superpowers/**
+  Historical implementation plans/specifications. They are not runtime dependencies.
+  Remove if Git history is sufficient and these plans are no longer useful as context.
+
+.claude/**
+CLAUDE.md
+  Upstream Claude-specific settings, commands, and contributor guidance. They can be
+  removed if this fork will not use Claude tooling. CLAUDE.md also contains architecture
+  and decoder-maintenance knowledge, so preserve any still-useful instructions in normal
+  project documentation before deleting it.
+
+.windsurf/**
+  Windsurf-editor-specific workflow material. The only currently tracked file is the
+  empty plan listed in section 1, so the directory can disappear with that file.
+
+showcase/exports/apple-laptops.json
+  Unreferenced sample export. It can be removed independently if it is not wanted as a
+  fixture/example, even when the showcase application remains.
+
+tools/test-barcodes.html
+  Standalone manual iOS barcode-scanner test page with no repository references. Remove
+  if that manual test workflow is no longer used.
+
+
+5. FORK-SPECIFIC GITHUB CLEANUP
+-------------------------------
+
+.github/CODEOWNERS
+  Assigns every path to the upstream account @wottle. Remove it or replace it with this
+  fork's maintainers; leaving it unchanged gives misleading review ownership.
+
+.github/workflows/publish.yml
+.github/workflows/retag.yml
+  These publish or retag upstream wottle/inventory-* images and use the upstream account
+  name. Remove/disable them if this fork will not publish images, or rewrite them for the
+  fork before use. publish.yml is especially important because it has automatic branch
+  triggers. Keep .github/workflows/test.yml, adjusting its component matrix only when an
+  optional application is removed.
+
+
+6. DOCKER/ENVIRONMENT FILES TO CONSOLIDATE LATER
+------------------------------------------------
+
+These are REPLACE candidates, not immediate deletions. First create and test the fork's
+canonical development and production Compose files, update the documentation, and only
+then remove redundant upstream variants.
+
+docker-compose.yml
+docker-compose.build.yml
+docker-compose.simple.yml
+  Overlapping upstream Compose variants. They can be removed after docker-compose.dev.yml
+  and docker-compose.prod.yml fully cover the supported local and production workflows.
+
+docker/init-databases.sh
+  Unreferenced PostgreSQL init script that creates an "umami" database. No current
+  Compose or documentation reference was found. Remove if external deployment tooling
+  does not mount it independently.
+
+.env.example
+  Keep for now. It can be removed after sanitized .env.dev.example and .env.prod.example
+  replacements are committed and all documentation points to them. Real .env files and
+  secrets must remain ignored and uncommitted.
+
+docker-compose.prod.yml
+  Do not simply delete this file. Rewrite it as the supported production definition,
+  validate it, and remove only if production deployment moves to another documented file.
+
+docker-compose.test.yml
+  Keep. It provides a distinct automated-test environment rather than duplicating the
+  development or production workflow.
+
+
+7. OPTIONAL AI IMAGE-GENERATION FEATURE
+---------------------------------------
+
+This is a coordinated feature-removal candidate, not ordinary cleanup. If image
+generation is intentionally excluded from the fork, review and remove together:
+
+  web/src/app/(main)/generate-images/page.tsx
+  web/src/components/GenerateImageModal.tsx
+  image-generation calls and UI in web/src/app/devices/[id]/photos/page.tsx
+  related navigation, settings, and locale keys
+  /generate-image routes in api/src/index.ts
+  the API openai dependency
+  OPENAI_API_KEY references in Compose files and documentation
+
+Keeping the feature disabled is lower risk if future upstream synchronization matters.
+
+
+8. DO NOT REMOVE DURING CLEANUP
+-------------------------------
+
+api/prisma/migrations/**
+  Immutable database history. Old migrations remain required even after a feature is
+  retired; schema changes must be expressed as a new migration.
+
+api/category.sql
+api/device_templates.sql
+  Both are read directly by api/prisma/seed.ts and are required by database seeding.
+
+scripts/generate_decoder_data.py
+scripts/parse_modelinfo.py
+tools/decoder-data/**
+tools/serial-decoder/**
+  Active source data and generator toolchain for Apple serial decoding. Generated data
+  is consumed by the web and iOS implementations. Remove only as a separate feature
+  retirement that also removes every decoder consumer.
+
+docs/architecture/flows.html
+docs/architecture/flows.json
+  Active architecture documentation, not build residue. Keep unless architecture docs
+  are deliberately being retired.
+
+package-lock.json files and other lockfiles
+  Required for reproducible dependency installation and container/CI builds.
+
+LICENSE.md, README.md, README-Fork.md, and attribution notices
+  Required licensing, attribution, and core project documentation. Rewrite outdated
+  operational text where necessary; do not treat these as disposable artifacts.
+
+
+9. RECOMMENDED REMOVAL ORDER
+----------------------------
+
+1. Commit this report by itself so it remains an auditable decision record.
+2. Remove only the section 1 files in a dedicated cleanup commit.
+3. Remove section 2 legacy components separately and run web typecheck, unit tests, and
+   production build.
+4. Decide which optional applications belong in the fork before deleting any of them.
+5. Remove each optional application in its own commit, including its CI, Compose, docs,
+   and tests, then validate the remaining repository.
+6. Consolidate Compose/environment files only after the replacement dev/prod workflows
+   have been tested with clean builds and fresh databases.
+7. Make a verified database and media backup before any API schema or migration work.
+
+This ordering keeps every deletion reviewable and makes rollback straightforward.
