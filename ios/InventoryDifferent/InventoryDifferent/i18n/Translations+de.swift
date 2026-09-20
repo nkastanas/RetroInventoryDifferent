@@ -447,7 +447,7 @@ extension Translations {
             markAcquired: "Als erworben markieren"
         ),
         login: .init(
-            appName: "InventoryDifferent",
+            appName: "Retro Inventory Different",
             connectTitle: "Mit Server verbinden",
             serverURL: "Server-URL",
             serverURLPlaceholder: "https://ihr-server.beispiel.de",
@@ -461,7 +461,7 @@ extension Translations {
             couldNotConnect: "Verbindung zum Server nicht möglich",
             connectionFailed: "Verbindung fehlgeschlagen: ",
             setupTitle: "Einrichtung",
-            welcomeTitle: "Willkommen bei Inventory Different",
+            welcomeTitle: "Willkommen bei Retro Inventory Different",
             enterURLHint: "Server-URL eingeben, um zu beginnen",
             setupURLPlaceholder: "https://beispiel.de"
         ),

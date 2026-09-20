@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to InventoryDifferent will be documented here.
+All notable changes to Retro Inventory Different will be documented here.
 
 ## [Unreleased]
 

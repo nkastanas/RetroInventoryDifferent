@@ -61,7 +61,7 @@ export function DeepLinkBanner({ deviceId }: DeepLinkBannerProps) {
                 </svg>
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold">Open in InventoryDifferent App</p>
+                <p className="text-sm font-semibold">Open in Retro Inventory Different App</p>
                 <p className="text-xs opacity-90 truncate">Get the full experience</p>
               </div>
             </div>

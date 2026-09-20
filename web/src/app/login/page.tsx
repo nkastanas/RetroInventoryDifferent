@@ -47,7 +47,7 @@ function LoginForm() {
             <div className="max-w-md w-full space-y-8">
                 <div>
                     <h1 className="text-center text-3xl font-bold text-[var(--foreground)]">
-                        InventoryDifferent
+                        Retro Inventory Different
                     </h1>
                     <h2 className="mt-2 text-center text-xl text-[var(--muted-foreground)]">
                         {t.login.adminLogin}

@@ -22,7 +22,7 @@ struct ServerSetupView: View {
                     .font(.system(size: 60))
                     .foregroundColor(.accentColor)
                 
-                Text("Welcome to Inventory Different")
+                Text("Welcome to Retro Inventory Different")
                     .font(.title2)
                     .fontWeight(.bold)
                 

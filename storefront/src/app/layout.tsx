@@ -7,7 +7,7 @@ import { UmamiScript } from "../components/UmamiScript";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Shop - InventoryDifferent",
+  title: "Shop - Retro Inventory Different",
   description: "Browse vintage Apple devices for sale",
   icons: {
     icon: "/logo.png",

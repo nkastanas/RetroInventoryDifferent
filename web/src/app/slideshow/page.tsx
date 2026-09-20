@@ -206,7 +206,7 @@ export default function SlideshowPage() {
             style={{ background: 'linear-gradient(135deg, #5EBD3E, #009CDF)' }}
           />
           <span className="text-[11px] text-white/45 tracking-widest uppercase font-medium">
-            InventoryDifferent
+            Retro Inventory Different
           </span>
         </div>
 

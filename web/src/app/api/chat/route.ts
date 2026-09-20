@@ -37,7 +37,7 @@ export async function POST(req: Request) {
     console.log('[Chat API] Creating streamText...');
     const result = streamText({
       model: anthropic('claude-sonnet-4-6'),
-    system: `You are a helpful, friendly assistant for a vintage computer collection inventory system called "InventoryDifferent". 
+    system: `You are a helpful, friendly assistant for a vintage computer collection inventory system called "Retro Inventory Different".
     
 You help users query and understand their collection of vintage computers, peripherals, and accessories.
 

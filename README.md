@@ -1,4 +1,4 @@
-# InventoryDifferent
+# Retro Inventory Different
 
 A self-hosted inventory management system for vintage computer collections. Track acquisition, repair history, sale, and value across a web admin dashboard, public storefront, iOS app, and AI assistant integration.
 

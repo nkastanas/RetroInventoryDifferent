@@ -5,7 +5,7 @@ export default function PrivacyPage() {
       <p className="text-sm text-[var(--muted-foreground)] mb-8">Last updated: July 11, 2026</p>
 
       <p className="mb-6">
-        InventoryDifferent is a self-hosted application. This means your inventory
+        Retro Inventory Different is a self-hosted application. This means your inventory
         data is stored on a server that <strong>you own and control</strong> — not on
         any server operated by the developer. The developer (Michael Wottle) does not
         have access to your data and does not collect, store, or transmit it.
@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <h2 className="text-xl font-semibold mt-8 mb-3">Data You Store</h2>
       <p className="mb-4">
         All inventory records, images, notes, financial data, and other content you
-        enter into InventoryDifferent are stored exclusively on your self-hosted server.
+        enter into Retro Inventory Different are stored exclusively on your self-hosted server.
         You are responsible for the security and backup of that server.
       </p>
 

@@ -1,6 +1,6 @@
 {
-  "name": "InventoryDifferent",
-  "short_name": "InvDiff",
+  "name": "Retro Inventory Different",
+  "short_name": "RetroInvDiff",
   "description": "Track your vintage computer collection",
   "start_url": "/",
   "display": "standalone",

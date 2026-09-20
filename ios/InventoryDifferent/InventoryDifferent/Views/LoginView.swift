@@ -30,7 +30,7 @@ struct LoginView: View {
                     .scaledToFit()
                     .frame(width: 80, height: 80)
 
-                Text("InventoryDifferent")
+                Text("Retro Inventory Different")
                     .font(.largeTitle)
                     .fontWeight(.bold)
 

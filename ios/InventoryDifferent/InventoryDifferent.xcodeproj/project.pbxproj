@@ -419,6 +419,7 @@
 				DEVELOPMENT_TEAM = XLY3EERM8Z;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = InventoryDifferent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Retro Inventory Different";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
@@ -454,6 +455,7 @@
 				DEVELOPMENT_TEAM = XLY3EERM8Z;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = InventoryDifferent/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Retro Inventory Different";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.lifestyle";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";

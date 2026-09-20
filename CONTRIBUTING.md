@@ -1,4 +1,4 @@
-# Contributing to InventoryDifferent
+# Contributing to Retro Inventory Different
 
 Thanks for your interest in contributing! This is a personal project I've open-sourced, so contributions are welcome but expectations are relaxed — just good-faith collaboration.
 

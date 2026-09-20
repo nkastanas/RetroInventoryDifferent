@@ -14,7 +14,7 @@ import { getTranslations } from "../i18n";
 export const dynamic = 'force-dynamic';
 
 export const metadata: Metadata = {
-  title: "InventoryDifferent",
+  title: "Retro Inventory Different",
   description: "Track your collection",
   icons: {
     icon: "/logo.png",
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'InventoryDifferent',
+    title: 'Retro Inventory Different',
   },
   manifest: '/manifest.json',
 };

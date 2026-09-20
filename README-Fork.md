@@ -1,4 +1,4 @@
-InventoryDifferent Fork Plan
+Retro Inventory Different Fork Plan
 
 Personal fork plan for a large retro hardware/software collection.
 
@@ -8,7 +8,7 @@ Last reviewed against upstream: 2026-09-17
 
 1. Goal
 
-Use InventoryDifferent as a simple, Docker-based inventory system for a large retro hardware/software collection, while keeping the fork maintainable and reasonably easy to sync with upstream.
+Use Retro Inventory Different as a simple, Docker-based inventory system for a large retro hardware/software collection, while keeping the fork maintainable and reasonably easy to sync with the InventoryDifferent2 upstream project.
 
 Main principles:
 
@@ -106,7 +106,7 @@ Example:
 {
   "backupFormat": 1,
   "createdAt": "2026-09-17T20:30:00Z",
-  "application": "InventoryDifferent",
+  "application": "Retro Inventory Different",
   "gitCommit": "abc1234",
   "databaseEngine": "postgresql",
   "includeUploads": true
@@ -825,7 +825,7 @@ That gives us a safe recovery point for every later customization.
 
 Verified from the upstream project documentation at the time this file was written:
 
-InventoryDifferent uses TypeScript across API/web/storefront.
+Retro Inventory Different uses TypeScript across API/web/storefront.
 
 PostgreSQL is used for the database.
 

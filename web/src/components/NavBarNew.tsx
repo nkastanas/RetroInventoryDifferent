@@ -164,11 +164,12 @@ export function NavBar() {
       <header className="sticky top-0 z-50 bg-[#e5e5e5]/80 dark:bg-[#2d2d2d]/80 backdrop-blur-2xl" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="max-w-[1440px] mx-auto px-8 py-4 flex justify-between items-center">
           <div className="flex items-center gap-3">
-            <img src="/logo.png" alt="InventoryDifferent" width={32} height={32} />
+            <img src="/logo.png" alt="Retro Inventory Different" width={32} height={32} />
             <h1 className="text-2xl font-light tracking-tight">
+              <span style={{ color: '#009CDF' }}>Retro</span>{' '}
               <span style={{ color: '#5EBD3E' }}>Inv</span>
               <span style={{ color: '#FFB900' }}>ent</span>
-              <span style={{ color: '#F78200' }}>ory</span>
+              <span style={{ color: '#F78200' }}>ory</span>{' '}
               <span style={{ color: '#E23838' }}>Dif</span>
               <span style={{ color: '#973999' }}>fer</span>
               <span style={{ color: '#009CDF' }}>ent</span>
