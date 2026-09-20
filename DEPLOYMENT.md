@@ -4,13 +4,12 @@ This guide covers deploying the Vintage Inventory Management System across multi
 
 ## System Overview
 
-The system consists of five main components:
+The system consists of four main components:
 
 1. **Admin Web App** - Next.js application for inventory management with AI chat assistant
 2. **Public Storefront** - Next.js application for public-facing shop
 3. **GraphQL API** - Express/Node.js backend with Prisma ORM
 4. **MCP Server** - Model Context Protocol server providing AI tools for inventory queries
-5. **iOS App** - Native SwiftUI application for mobile inventory management
 
 ## Prerequisites
 
@@ -19,11 +18,6 @@ The system consists of five main components:
 - Traefik running with a network (default: `traefik`)
 - DNS configured to point your subdomains to your NAS
 - Portainer (optional, for easier management)
-
-### For iOS App
-- Xcode 15+ on macOS
-- Apple Developer account (for TestFlight or App Store deployment)
-- iOS 17+ device or simulator
 
 ## Quick Start
 
@@ -130,7 +124,7 @@ The admin web app proxies all API traffic through port 3000 internally — you d
 |------|---------|-----------------|
 | 3000 | Admin web app | **Yes** — required |
 | 3001 | Storefront | Optional |
-| 4000 | API (direct) | Optional — only needed for iOS app or direct API access |
+| 4000 | API (direct) | Optional — only needed for direct API access |
 | 5432 | PostgreSQL | **Never** — serious security risk |
 
 In Synology's firewall (Control Panel → Security → Firewall), add a rule to allow port 3000 from your local subnet. Do not add a rule for port 5432.
@@ -229,26 +223,15 @@ If you see CORS errors in the browser console, verify:
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Client Layer                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐      │
-│  │  Admin Web   │  │  Storefront  │  │   iOS App    │      │
-│  │  (Browser)   │  │  (Browser)   │  │  (SwiftUI)   │      │
-│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘      │
-└─────────┼──────────────────┼──────────────────┼─────────────┘
-          │                  │                  │
-          │                  │                  │
-          ▼                  ▼                  │
-    ┌─────────────┐    ┌─────────────┐         │
-    │   Traefik   │    │   Traefik   │         │
-    │ (inventory  │    │   (shop     │         │
-    │  .domain)   │    │  .domain)   │         │
-    └──────┬──────┘    └──────┬──────┘         │
-           │                  │                 │
-           │                  │                 │
-    ┌──────┴──────┬───────────┴─────────────────┘
-    │             │                   │
-    ▼             ▼                   ▼
+┌───────────────────────────────────────────┐
+│                Client Layer               │
+│  ┌──────────────┐    ┌──────────────┐     │
+│  │  Admin Web   │    │  Storefront  │     │
+│  │  (Browser)   │    │  (Browser)   │     │
+│  └──────┬───────┘    └──────┬───────┘     │
+└─────────┼───────────────────┼─────────────┘
+          │                   │
+          ▼                   ▼
 ┌─────────┐  ┌─────────┐      ┌─────────────┐
 │inventory│  │inventory│      │  inventory  │
 │  -web   │  │storefront      │    -api     │
@@ -275,7 +258,6 @@ If you see CORS errors in the browser console, verify:
 
 - **Admin Web**: Full-featured inventory management interface with AI chat assistant
 - **Storefront**: Public-facing shop for listing items for sale
-- **iOS App**: Native mobile app for on-the-go inventory management
 - **API**: GraphQL API serving all clients with Prisma ORM
 - **MCP Server**: Provides AI tools for searching devices, getting details, and financial summaries
 - **Database**: PostgreSQL with device templates and categories
@@ -290,56 +272,6 @@ The admin web app includes an AI-powered chat assistant that can:
 - Answer questions about your vintage computer collection
 
 The chat uses OpenAI's GPT-5-4 model and requires an `OPENAI_API_KEY` to function.
-
-## iOS App Deployment
-
-The iOS app is located in `/ios/InventoryDifferent/` and is built with SwiftUI.
-
-### Development
-
-1. Open the project in Xcode:
-   ```bash
-   cd ios/InventoryDifferent
-   open InventoryDifferent.xcodeproj
-   ```
-
-2. Configure API endpoint in `APIService.swift`:
-   ```swift
-   private let baseURL = "https://inventory.yourdomain.com"
-   ```
-
-3. Select a simulator or connected device
-4. Build and run (⌘R)
-
-### TestFlight Distribution
-
-1. **Archive the app**: Product → Archive in Xcode
-2. **Upload to App Store Connect**: 
-   - Select the archive in Organizer
-   - Click "Distribute App"
-   - Choose "App Store Connect"
-   - Follow the prompts to upload
-3. **Configure in App Store Connect**:
-   - Add build to TestFlight
-   - Add internal/external testers
-   - Submit for review (external testing only)
-
-### App Store Release
-
-1. Complete TestFlight testing
-2. In App Store Connect:
-   - Create a new version
-   - Add screenshots, description, keywords
-   - Select the build from TestFlight
-   - Submit for review
-3. Once approved, release to App Store
-
-### Configuration
-
-The iOS app requires:
-- **API URL**: Set in `APIService.swift`
-- **iOS 17+**: Minimum deployment target
-- **Capabilities**: None required (no push notifications, etc.)
 
 ## Portainer Deployment
 

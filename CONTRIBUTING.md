@@ -29,7 +29,6 @@ PRs for bug fixes, dependency updates, documentation improvements, and items fro
 
 - Node.js 18+
 - Docker and Docker Compose (for the database)
-- Xcode 15+ (for iOS changes only)
 
 ### Running locally
 
@@ -70,13 +69,6 @@ cd api && npm run build
 cd web && npm run build
 cd storefront && npm run build
 ```
-
-### iOS
-
-Open `ios/InventoryDifferent/InventoryDifferent.xcodeproj` in Xcode. You'll need to:
-- Set your own Apple Developer Team ID in the project settings
-- Update the bundle identifier from `com.yourorg.InventoryDifferent` to your own
-- Update `InventoryDifferent.entitlements` with your own domain for Universal Links (or remove those entries if you don't need deep linking)
 
 ## Running Tests
 

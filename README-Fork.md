@@ -323,7 +323,7 @@ Greek date/number formatting should be tested.
 
 Start with the admin/web UI.
 
-Storefront/iOS translation can be evaluated separately.
+Storefront translation can be evaluated separately.
 
 2.5 AI Image Generation
 
@@ -791,7 +791,6 @@ Phase 5 — Optional
 [ ] AI image provider abstraction
 [ ] LIGHT/DARK image presets
 [ ] Storefront changes
-[ ] iOS changes
 
 14. First Working Session
 

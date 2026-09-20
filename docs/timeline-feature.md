@@ -4,7 +4,7 @@
 
 The Collection Timeline plots devices in your collection by their `releaseYear` alongside curated Apple product launches and computing milestones, giving historical context to what you own.
 
-Available at `/timeline` on the web admin and via the Timeline menu item on iOS.
+Available at `/timeline` in the web admin.
 
 ---
 
@@ -50,11 +50,11 @@ The seed script skips events that already have a matching `title`, so re-running
 
 ### Event Types & Colors
 
-| type | Web color | iOS color |
-|---|---|---|
-| `apple` | `bg-blue-500` | `.blue` |
-| `tech` | `bg-orange-500` | `.orange` |
-| `cultural` | `bg-purple-500` | `.purple` |
+| type | Web color |
+|---|---|
+| `apple` | `bg-blue-500` |
+| `tech` | `bg-orange-500` |
+| `cultural` | `bg-purple-500` |
 
 ---
 
@@ -63,15 +63,6 @@ The seed script skips events that already have a matching `title`, so re-running
 - **Page**: `web/src/app/timeline/page.tsx` — `"use client"`, `useQuery` fetching both `devices` and `timelineEvents` in one query. Auth-gated via Apollo (returns error if unauthenticated).
 - **Component**: `web/src/components/TimelineView.tsx` — pure Tailwind, no chart library. Three-column grid: devices on the left, year badge center, events on the right.
 - **Menu**: Hamburger → Timeline (between Stats and Usage), auth-gated.
-
----
-
-## iOS Implementation
-
-- **Model**: `Models/TimelineEvent.swift` — `Codable`, `TimelineEventType` enum with `.color` computed property.
-- **Service**: `Services/TimelineService.swift` — fetches `timelineEvents` from GraphQL via `APIService`.
-- **View**: `Views/TimelineView.swift` — three-state (loading/error/content). Uses `DeviceStore` (already loaded) for devices; fetches events on appear. `LazyVStack` with sticky year section headers.
-- **Menu**: Timeline button (teal, `clock.arrow.circlepath`) in the auth-gated menu section between Stats and Chat.
 
 ---
 

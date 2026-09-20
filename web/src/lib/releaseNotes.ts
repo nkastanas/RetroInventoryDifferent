@@ -15,7 +15,9 @@ export const releaseNotes: ReleaseEntry[] = [
     added: [
       'Exhibition Sheets: status filter chips on the device selection page — toggle one or more statuses (In Collection, For Sale, etc.) to narrow the device list; "Select All" respects the active filter.',
     ],
-    changed: [],
+    changed: [
+      'Removed the retired native iOS client and its web deep-link integration; mobile browsers continue to use the responsive web app.',
+    ],
     fixed: [],
   },
   {

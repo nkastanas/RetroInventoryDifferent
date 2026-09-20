@@ -10,8 +10,6 @@ Sources (edit these to add or update model codes):
     tools/decoder-data/vintage_model_codes.json {code: name | null, ...}
 
 Outputs:
-    ios/.../SerialDecoder/Data/modern_models.swift      (chunked to avoid OOM)
-    ios/.../SerialDecoder/Data/vintage_model_codes.swift
     tools/serial-decoder/.../modern_models.swift        (same, for CLI tool)
     tools/serial-decoder/.../vintage_model_codes.swift
     web/src/lib/modern_models.json                      (direct import for TypeScript)
@@ -26,8 +24,6 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODERN_JSON  = os.path.join(ROOT, "tools", "decoder-data", "modern_models.json")
 VINTAGE_JSON = os.path.join(ROOT, "tools", "decoder-data", "vintage_model_codes.json")
 
-IOS_DIR   = os.path.join(ROOT, "ios", "InventoryDifferent", "InventoryDifferent",
-                         "Utilities", "SerialDecoder", "Data")
 TOOLS_DIR = os.path.join(ROOT, "tools", "serial-decoder", "Sources",
                          "SerialDecoderLib", "Data")
 WEB_LIB   = os.path.join(ROOT, "web", "src", "lib")
@@ -111,10 +107,6 @@ def main():
     modern  = json.load(open(MODERN_JSON,  encoding="utf-8"))
     vintage = json.load(open(VINTAGE_JSON, encoding="utf-8"))
     print(f"modern: {len(modern)} entries  |  vintage: {len(vintage)} entries")
-
-    print("Generating Swift (iOS)...")
-    generate_modern_swift(modern,  os.path.join(IOS_DIR,   "modern_models.swift"))
-    generate_vintage_swift(vintage, os.path.join(IOS_DIR,  "vintage_model_codes.swift"))
 
     print("Generating Swift (tools/serial-decoder)...")
     generate_modern_swift(modern,  os.path.join(TOOLS_DIR, "modern_models.swift"))

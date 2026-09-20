@@ -317,7 +317,7 @@ export default function ListNewPage() {
     setBarcodeSupported(typeof BarcodeDetectorCtor === 'function' && !!navigator?.mediaDevices?.getUserMedia);
   }, []);
 
-  // Same normalized matching logic as iOS findMatchingTemplate
+  // Normalize decoded model names before matching them to templates.
   const findMatchingTemplate = async (modelName: string): Promise<number | undefined> => {
     const result = await getTemplatesForMatching().catch(() => null);
     const templates: { id: number; name: string; additionalName?: string }[] =

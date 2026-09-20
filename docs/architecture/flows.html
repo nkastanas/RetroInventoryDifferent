@@ -133,9 +133,8 @@ body { font-family: 'Inter', system-ui, sans-serif; }
 // ── Embedded data ──────────────────────────────────────────────────────────────
 var DATA = {
   packages: [
-    { id:'p-web',        name:'Web',         sub:'Next.js admin',             tier:'client',     x:14, y:12 },
-    { id:'p-ios',        name:'iOS',         sub:'SwiftUI',                   tier:'client',     x:34, y:12 },
-    { id:'p-storefront', name:'Storefront',  sub:'Next.js shop',              tier:'client',     x:60, y:12 },
+    { id:'p-web',        name:'Web',         sub:'Next.js admin',             tier:'client',     x:18, y:12 },
+    { id:'p-storefront', name:'Storefront',  sub:'Next.js shop',              tier:'client',     x:48, y:12 },
     { id:'p-showcase',   name:'Showcase',    sub:'The Archive',               tier:'client',     x:82, y:12 },
     { id:'p-mcp',        name:'MCP Server',  sub:'AI tools / stdio',          tier:'middleware', x:10, y:52 },
     { id:'p-api',        name:'GraphQL API', sub:'Express · Apollo · Prisma', tier:'api',        x:48, y:52 },
@@ -144,7 +143,6 @@ var DATA = {
   ],
   edges: [
     { id:'e-web-api',      from:'p-web',        to:'p-api',     label:'GraphQL / REST' },
-    { id:'e-ios-api',      from:'p-ios',        to:'p-api',     label:'GraphQL / REST' },
     { id:'e-store-api',    from:'p-storefront', to:'p-api',     label:'GraphQL' },
     { id:'e-showcase-api', from:'p-showcase',   to:'p-api',     label:'GraphQL' },
     { id:'e-mcp-api',      from:'p-mcp',        to:'p-api',     label:'GraphQL' },
@@ -153,18 +151,18 @@ var DATA = {
   ],
   flows: [
     {
-      id:'create-device', icon:'📦', name:'Create Device', path:'Web / iOS → API → PostgreSQL',
+      id:'create-device', icon:'📦', name:'Create Device', path:'Web → API → PostgreSQL',
       steps: [
-        { title:'User submits create form', desc:'Apollo Client fires the createDevice GraphQL mutation with a DeviceCreateInput payload. JWT in Authorization header.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'User submits create form', desc:'Apollo Client fires the createDevice GraphQL mutation with a DeviceCreateInput payload. JWT in Authorization header.', packages:['p-web'], edges:['e-web-api'] },
         { title:'Resolver validates & writes', desc:'createDevice resolver in resolvers.ts calls requireAuth(), then prisma.device.create() with DEVICE_INCLUDE.', packages:['p-api'], edges:['e-api-db'] },
         { title:'Activity log written', desc:'If dateAcquired is set, a DEVICE_ACQUIRED ActivityLog row is inserted. This powers the dashboard activity feed.', packages:['p-api'], edges:['e-api-db'] },
-        { title:'Device returned to client', desc:'Full Device object (with relations) returned. Apollo Client writes it to its normalised cache; UI re-renders.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] }
+        { title:'Device returned to client', desc:'Full Device object (with relations) returned. Apollo Client writes it to its normalised cache; UI re-renders.', packages:['p-web'], edges:['e-web-api'] }
       ]
     },
     {
-      id:'edit-device', icon:'✏️', name:'Edit Device', path:'Web / iOS → API → PostgreSQL',
+      id:'edit-device', icon:'✏️', name:'Edit Device', path:'Web → API → PostgreSQL',
       steps: [
-        { title:'User saves changes', desc:'Apollo Client fires updateDevice mutation with a DeviceUpdateInput. Only changed fields are sent.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'User saves changes', desc:'Apollo Client fires updateDevice mutation with a DeviceUpdateInput. Only changed fields are sent.', packages:['p-web'], edges:['e-web-api'] },
         { title:'Resolver reads current state', desc:'updateDevice resolver reads the existing device (status, functionalStatus, lastPowerOnDate) before applying the update — needed to detect what changed for activity logging.', packages:['p-api'], edges:['e-api-db'] },
         { title:'DB row updated', desc:'prisma.device.update() writes the clean data. Undefined fields are stripped so they don\'t overwrite existing values with null.', packages:['p-api'], edges:['e-api-db'] },
         { title:'Value snapshot created (conditional)', desc:'If estimatedValue changed, a ValueSnapshot row is inserted — but only if the value differs from the last snapshot. Powers the per-device value history chart.', packages:['p-api'], edges:['e-api-db'] },
@@ -172,9 +170,9 @@ var DATA = {
       ]
     },
     {
-      id:'delete-device', icon:'🗑️', name:'Delete Device (soft)', path:'Web / iOS → API → PostgreSQL',
+      id:'delete-device', icon:'🗑️', name:'Delete Device (soft)', path:'Web → API → PostgreSQL',
       steps: [
-        { title:'User clicks Delete', desc:'deleteDevice(id) mutation fired from web Trash page or iOS device detail.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'User clicks Delete', desc:'deleteDevice(id) mutation fired from the web Trash page or device detail.', packages:['p-web'], edges:['e-web-api'] },
         { title:'Resolver sets deleted flag', desc:'prisma.device.update({ data: { deleted: true } }) — device is hidden from all queries but not removed from DB.', packages:['p-api'], edges:['e-api-db'] }
       ]
     },
@@ -195,38 +193,38 @@ var DATA = {
       ]
     },
     {
-      id:'add-photo', icon:'📷', name:'Add Photo', path:'Web / iOS → REST /upload → /uploads → createImage → PostgreSQL',
+      id:'add-photo', icon:'📷', name:'Add Photo', path:'Web → REST /upload → /uploads → createImage → PostgreSQL',
       steps: [
-        { title:'Client selects image file', desc:'Web: file input triggers. iOS: PHPickerViewController presents photo library. Image is held in memory ready to POST.', packages:['p-web','p-ios'], edges:[] },
-        { title:'POST /upload (multipart/form-data)', desc:'Client POSTs to /upload?deviceId=X. This is a REST endpoint — not GraphQL — handled by multer (2 GB limit). JWT required.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'Client selects image file', desc:'A web file input selects the image and holds it ready to upload.', packages:['p-web'], edges:[] },
+        { title:'POST /upload (multipart/form-data)', desc:'Client POSTs to /upload?deviceId=X. This is a REST endpoint — not GraphQL — handled by multer (2 GB limit). JWT required.', packages:['p-web'], edges:['e-web-api'] },
         { title:'File saved to /uploads', desc:'multer writes the file to /uploads/devices/{deviceId}/{uuid}.ext on disk. The path is returned in the JSON response.', packages:['p-api'], edges:['e-api-uploads'] },
         { title:'createImage mutation fired', desc:'Client passes the returned path to createImage GraphQL mutation. Resolver calls generateThumbnailForUpload() — sharp generates a 320×320 WebP thumbnail and saves it alongside the original.', packages:['p-api'], edges:['e-api-uploads'] },
         { title:'Image row saved to DB', desc:'prisma.image.create() writes path, thumbnailPath, dateTaken (from EXIF), isThumbnail, and deviceId. First IMAGE auto-becomes the device thumbnail.', packages:['p-api'], edges:['e-api-db'] }
       ]
     },
     {
-      id:'upload-video', icon:'🎥', name:'Upload Video', path:'Web / iOS → REST /upload → /uploads → createImage (async thumb) → PostgreSQL',
+      id:'upload-video', icon:'🎥', name:'Upload Video', path:'Web → REST /upload → /uploads → createImage (async thumb) → PostgreSQL',
       steps: [
-        { title:'Client selects video file', desc:'Web: file input with video/* accept. iOS: PHPickerViewController with video media type.', packages:['p-web','p-ios'], edges:[] },
-        { title:'POST /upload', desc:'Client POSTs the video to /upload?deviceId=X. multer accepts mp4/mov/webm/avi up to 2 GB.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'Client selects video file', desc:'A web file input configured for video selects the file.', packages:['p-web'], edges:[] },
+        { title:'POST /upload', desc:'Client POSTs the video to /upload?deviceId=X. multer accepts mp4/mov/webm/avi up to 2 GB.', packages:['p-web'], edges:['e-web-api'] },
         { title:'File saved to /uploads', desc:'multer writes the video to /uploads/devices/{deviceId}/{uuid}.mp4 (or original ext). Path returned to client.', packages:['p-api'], edges:['e-api-uploads'] },
         { title:'createImage mutation — DB row created immediately', desc:'Resolver creates the image record instantly (mediaType: VIDEO, no thumbnailPath yet) so the client isn\'t blocked by ffmpeg processing.', packages:['p-api'], edges:['e-api-db'] },
         { title:'Async: ffmpeg generates thumbnail', desc:'setImmediate() runs generateVideoThumbnail() in the background: ffmpeg extracts frame at 1s, sharp converts to 320×320 WebP, ffprobe reads duration. The image row is updated when done.', packages:['p-api'], edges:['e-api-uploads','e-api-db'] }
       ]
     },
     {
-      id:'delete-image', icon:'🗑️', name:'Delete Image / Video', path:'Web / iOS → API → PostgreSQL + /uploads',
+      id:'delete-image', icon:'🗑️', name:'Delete Image / Video', path:'Web → API → PostgreSQL + /uploads',
       steps: [
-        { title:'User clicks Delete on image', desc:'deleteImage(id) mutation fired from web device detail Photos tab or iOS Images tab.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'User clicks Delete on image', desc:'deleteImage(id) mutation fired from the web device detail Photos tab.', packages:['p-web'], edges:['e-web-api'] },
         { title:'Resolver fetches paths then deletes DB row', desc:'deleteImage resolver reads the image record to get path and thumbnailPath, then calls prisma.image.delete().', packages:['p-api'], edges:['e-api-db'] },
         { title:'Files removed from disk', desc:'fs.unlinkSync() called on both the original file and the WebP thumbnail (if it exists).', packages:['p-api'], edges:['e-api-uploads'] }
       ]
     },
     {
-      id:'edit-photo', icon:'✂️', name:'Edit Photo (Rotate / Crop)', path:'Web / iOS → API → /uploads → PostgreSQL',
+      id:'edit-photo', icon:'✂️', name:'Edit Photo (Rotate / Crop)', path:'Web → API → /uploads → PostgreSQL',
       steps: [
-        { title:'User opens Edit Photo', desc:'Web: pencil button appears on hover over gallery thumbnail → opens EditImageModal. iOS: Edit Photo button in ImageManagementView sheet → presents EditPhotoView.', packages:['p-web','p-ios'], edges:[] },
-        { title:'editImage mutation fired', desc:'Client sends editImage(id, rotation, cropLeft?, cropTop?, cropWidth?, cropHeight?) over GraphQL with JWT. Crop coords are 0–1 normalized floats in the post-rotation space.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'User opens Edit Photo', desc:'A pencil button appears over the gallery thumbnail and opens EditImageModal.', packages:['p-web'], edges:[] },
+        { title:'editImage mutation fired', desc:'Client sends editImage(id, rotation, cropLeft?, cropTop?, cropWidth?, cropHeight?) over GraphQL with JWT. Crop coords are 0–1 normalized floats in the post-rotation space.', packages:['p-web'], edges:['e-web-api'] },
         { title:'API locks in original (first edit)', desc:'editImage resolver: if image.originalPath is null this is the first edit — originalPath is set to image.path to preserve the untouched file.', packages:['p-api'], edges:['e-api-db'] },
         { title:'applyImageTransforms writes display copy', desc:'Sharp reads the original file, applies .rotate() (EXIF auto-orient + explicit rotation), then .extract() if a crop is set. Output is written to /uploads/devices/{id}/display/{uuid}.ext.', packages:['p-api'], edges:['e-api-uploads'] },
         { title:'Thumbnail regenerated', desc:'Same pipeline (applyImageTransforms) is run at 320×320 WebP to regenerate the thumbnail from the new display copy.', packages:['p-api'], edges:['e-api-uploads'] },
@@ -234,41 +232,41 @@ var DATA = {
       ]
     },
     {
-      id:'add-note', icon:'📝', name:'Add Note', path:'Web / iOS / MCP → API → PostgreSQL',
+      id:'add-note', icon:'📝', name:'Add Note', path:'Web / MCP → API → PostgreSQL',
       steps: [
-        { title:'Note submitted', desc:'createNote(input) mutation fired from web device detail, iOS Notes tab, or MCP add_note tool.', packages:['p-web','p-ios','p-mcp'], edges:['e-web-api','e-ios-api','e-mcp-api'] },
+        { title:'Note submitted', desc:'createNote(input) mutation fired from web device detail or the MCP add_note tool.', packages:['p-web','p-mcp'], edges:['e-web-api','e-mcp-api'] },
         { title:'Resolver writes note', desc:'createNote resolver calls prisma.note.create() with content, date (auto-timestamped), and deviceId.', packages:['p-api'], edges:['e-api-db'] }
       ]
     },
     {
-      id:'add-maintenance-task', icon:'🔧', name:'Add Maintenance Task', path:'Web / iOS / MCP → API → PostgreSQL',
+      id:'add-maintenance-task', icon:'🔧', name:'Add Maintenance Task', path:'Web / MCP → API → PostgreSQL',
       steps: [
-        { title:'Task submitted', desc:'createMaintenanceTask(input) mutation fired from web, iOS, or MCP add_maintenance_task tool. Input includes label, dateCompleted, notes, optional cost.', packages:['p-web','p-ios','p-mcp'], edges:['e-web-api','e-ios-api','e-mcp-api'] },
+        { title:'Task submitted', desc:'createMaintenanceTask(input) mutation fired from web or the MCP add_maintenance_task tool. Input includes label, dateCompleted, notes, optional cost.', packages:['p-web','p-mcp'], edges:['e-web-api','e-mcp-api'] },
         { title:'Resolver writes task', desc:'prisma.maintenanceTask.create(). The cost field rolls up into totalMaintenanceCost on the financials page.', packages:['p-api'], edges:['e-api-db'] }
       ]
     },
     {
-      id:'login', icon:'🔐', name:'Login', path:'Web / iOS → REST /auth/login → API → PostgreSQL',
+      id:'login', icon:'🔐', name:'Login', path:'Web → REST /auth/login → API → PostgreSQL',
       steps: [
-        { title:'User submits password', desc:'Client POSTs { password } to /auth/login. This is a REST endpoint — not GraphQL.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'User submits password', desc:'Client POSTs { password } to /auth/login. This is a REST endpoint — not GraphQL.', packages:['p-web'], edges:['e-web-api'] },
         { title:'API validates password', desc:'Express route compares against AUTH_PASSWORD env var. If AUTH_PASSWORD is not set, auth is disabled entirely.', packages:['p-api'], edges:[] },
         { title:'Refresh token stored in DB', desc:'API hashes the refresh token (SHA-256) and writes the hash + expiry to the RefreshToken table. Expired tokens are pruned at this point.', packages:['p-api'], edges:['e-api-db'] },
-        { title:'JWT tokens returned to client', desc:'API returns { accessToken (1h), refreshToken (90d) }. Client stores both and attaches accessToken as Authorization: Bearer on subsequent requests.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] }
+        { title:'JWT tokens returned to client', desc:'API returns { accessToken (1h), refreshToken (90d) }. Client stores both and attaches accessToken as Authorization: Bearer on subsequent requests.', packages:['p-web'], edges:['e-web-api'] }
       ]
     },
     {
-      id:'token-refresh', icon:'🔄', name:'Token Refresh', path:'Web / iOS → REST /auth/refresh → API → PostgreSQL',
+      id:'token-refresh', icon:'🔄', name:'Token Refresh', path:'Web → REST /auth/refresh → API → PostgreSQL',
       steps: [
-        { title:'Client detects expiring access token', desc:'Before the 1-hour access token expires, client POSTs { refreshToken } to /auth/refresh.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'Client detects expiring access token', desc:'Before the 1-hour access token expires, client POSTs { refreshToken } to /auth/refresh.', packages:['p-web'], edges:['e-web-api'] },
         { title:'JWT signature validated', desc:'API verifies the token signature with the persisted JWT secret (loaded from SystemConfig on startup).', packages:['p-api'], edges:[] },
         { title:'Refresh token consumed from DB', desc:'API looks up the token hash in RefreshToken table. If not found or expired, request is rejected. Record is deleted (single-use rotation).', packages:['p-api'], edges:['e-api-db'] },
-        { title:'New tokens issued and stored', desc:'New accessToken and refreshToken generated. New refresh token hash written to DB. Both returned to client.', packages:['p-api','p-web','p-ios'], edges:['e-api-db','e-web-api','e-ios-api'] }
+        { title:'New tokens issued and stored', desc:'New accessToken and refreshToken generated. New refresh token hash written to DB. Both returned to client.', packages:['p-api','p-web'], edges:['e-api-db','e-web-api'] }
       ]
     },
     {
-      id:'logout', icon:'🚪', name:'Logout', path:'Web / iOS → REST /auth/logout → API → PostgreSQL',
+      id:'logout', icon:'🚪', name:'Logout', path:'Web → REST /auth/logout → API → PostgreSQL',
       steps: [
-        { title:'Client calls /auth/logout', desc:'Client POSTs { refreshToken } to /auth/logout. Access token is discarded client-side.', packages:['p-web','p-ios'], edges:['e-web-api','e-ios-api'] },
+        { title:'Client calls /auth/logout', desc:'Client POSTs { refreshToken } to /auth/logout. Access token is discarded client-side.', packages:['p-web'], edges:['e-web-api'] },
         { title:'Refresh token revoked in DB', desc:'API deletes the RefreshToken record matching the token hash. Any future attempt to use this token at /auth/refresh will be rejected.', packages:['p-api'], edges:['e-api-db'] }
       ]
     },
@@ -319,12 +317,12 @@ var DATA = {
       ]
     },
     {
-      id:'ai-query', icon:'🤖', name:'AI Query (Chat)', path:'iOS / Web → OpenAI → MCP Server → API → PostgreSQL',
+      id:'ai-query', icon:'🤖', name:'AI Query (Chat)', path:'Web → OpenAI → MCP Server → API → PostgreSQL',
       steps: [
-        { title:'User types or speaks a question', desc:'iOS ChatView (SFSpeechRecognizer for voice input) or web CollectionChat sends the message to OpenAI with the MCP tool list attached.', packages:['p-web','p-ios'], edges:[] },
+        { title:'User types a question', desc:'Web CollectionChat sends the message to OpenAI with the MCP tool list attached.', packages:['p-web'], edges:[] },
         { title:'OpenAI selects an MCP tool', desc:'The model chooses from: list_all_devices, search_devices, get_device_details, get_financial_summary, list_devices, update_device, add_note, add_maintenance_task.', packages:['p-mcp'], edges:[] },
         { title:'MCP server calls GraphQL API', desc:'MCP server sends the appropriate GraphQL query or mutation to /graphql using a service JWT. Results serialised and returned as tool output.', packages:['p-mcp','p-api','p-db'], edges:['e-mcp-api','e-api-db'] },
-        { title:'OpenAI composes response', desc:'Tool result fed back to OpenAI; model writes a natural-language reply. iOS streams text via AVSpeechSynthesizer if voice mode is on.', packages:['p-web','p-ios'], edges:[] }
+        { title:'OpenAI composes response', desc:'Tool result is fed back to OpenAI and the model writes a natural-language reply for the web client.', packages:['p-web'], edges:[] }
       ]
     },
     {
@@ -352,16 +350,6 @@ var DATA = {
         { title:'Generated image saved to /uploads', desc:'OpenAI returns base64 image data. API decodes and writes to /uploads/devices/{deviceId}/{uuid}.png.', packages:['p-api'], edges:['e-api-uploads'] },
         { title:'Image record created in DB', desc:'createImage called internally; thumbnailPath generated via sharp. Showcase flag set if this is a showcase image.', packages:['p-api'], edges:['e-api-db'] },
         { title:'Client polls for completion', desc:'Web polls GET /generate-image/status/:jobId. On completion, the new image appears in the device\'s photo gallery.', packages:['p-web'], edges:['e-web-api'] }
-      ]
-    },
-    {
-      id:'widget-data', icon:'📱', name:'Widget Data Fetch', path:'iOS Widget → API → PostgreSQL',
-      steps: [
-        { title:'WidgetKit triggers timeline refresh', desc:'iOS schedules a timeline refresh (every 30 min for Stats/Recent; daily for Spotlight). WidgetAPIService.shared is called by the TimelineProvider.', packages:['p-ios'], edges:[] },
-        { title:'Widget reads token from shared Keychain', desc:'WidgetAuthService reads the access token via kSecAttrAccessGroup = "group.com.wottle.InventoryDifferent". Server URL is read from shared UserDefaults suite.', packages:['p-ios'], edges:[] },
-        { title:'GraphQL POST to /graphql', desc:'WidgetAPIService sends a targeted query (collectionStats + financialOverview for Stats; devices list for Spotlight/Recent). Bearer token in Authorization header.', packages:['p-ios'], edges:['e-ios-api'] },
-        { title:'API resolves query', desc:'Apollo resolver authenticates the JWT, queries PostgreSQL, and returns the compact response shape.', packages:['p-api'], edges:['e-api-db'] },
-        { title:'Widget renders entry and caches response', desc:'Decoded data is stored in shared UserDefaults as JSON. Widget entry is constructed and handed to WidgetKit. If the fetch fails, the last cached response is used as fallback.', packages:['p-ios'], edges:[] }
       ]
     }
   ]

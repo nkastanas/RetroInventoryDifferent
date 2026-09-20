@@ -9,7 +9,6 @@ InvDifferent2 is a vintage computer collection inventory management system. It's
 - **web/**: Admin dashboard (Next.js 14 App Router)
 - **storefront/**: Public shop frontend (Next.js 14)
 - **mcp-server/**: AI integration via Model Context Protocol
-- **ios/**: Native iOS app (SwiftUI)
 
 ## Distribution Model
 
@@ -68,7 +67,7 @@ cd storefront && npm run build
 
 ### Data Flow
 ```
-iOS App / Web / Storefront → GraphQL API (port 4000) → PostgreSQL
+Web / Storefront → GraphQL API (port 4000) → PostgreSQL
                                   ↓
                             /uploads (file storage)
 ```
@@ -125,7 +124,6 @@ When adding, removing, or renaming fields in `api/prisma/schema.prisma`, every l
 6. **`mcp-server/src/index.ts`** — all four tool handlers (`search_devices`, `get_device_details`, `list_all_devices`, `list_devices`) include/select and map device fields
 7. **`api/prisma/seed.ts`** — `parseTemplatesFromSql` and the template upsert `update`/`create` blocks; parsing logic must match the migration SQL so fresh installs produce the same structured data as migrated databases
 8. **Web** (`web/src/`) — form components, display components, GraphQL queries/fragments, TypeScript types
-9. **iOS** (`ios/`) — `Models/Device.swift`, `Models/Template.swift`, views that display or edit the field, GraphQL query strings in Services
 
 **For new relation tables** (e.g. adding a `DeviceStorage` join table):
 - Add the model to **both** `api/prisma/schema.prisma` and `mcp-server/prisma/schema.prisma`
@@ -140,7 +138,7 @@ When adding, removing, or renaming fields in `api/prisma/schema.prisma`, every l
 - Add any REST upload endpoints to `api/src/index.ts` if the model has file/image fields
 - Add web pages under `web/src/app/(main)/` with i18n strings in all 5 language files (`en`, `de`, `fr`, `es`, `it`)
 - Add integration tests in `api/tests/integration/` and add the table name to `cleanDatabase()` in `api/tests/helpers/setup.ts`
-- No iOS or MCP changes needed for web-only admin features
+- No MCP changes needed for web-only admin features
 
 **Verification before committing:**
 ```bash
@@ -148,33 +146,6 @@ cd api && npx tsc --noEmit          # must pass
 cd mcp-server && npx tsc --noEmit   # must pass
 cd web && npm run build              # must pass
 ```
-
-### iOS compatibility and `minimumCompatibleApiVersion`
-
-The iOS app connects to user-deployed backends that may not be updated immediately after a release. Two rules apply to every data model change:
-
-**1. Ensure the iOS app handles the change without crashing.**
-All device field decoding goes through the defensive custom `init(from:)` on `Device` and `DeviceListItem` in `ios/.../Models/Device.swift`. This means:
-- New optional fields added to the API require no iOS change — they decode to `nil` automatically.
-- New required (non-optional) fields are risky. Add them to `Device.CodingKeys` and the custom `init` with a safe fallback (e.g. `(try? c.decodeIfPresent(...)) ?? defaultValue`).
-- New enum cases must be handled — add a `case unknown` fallback and a custom `init(from:)` on the enum so unrecognized values degrade gracefully instead of crashing.
-- Removed fields are safe — the iOS decoder silently ignores keys it asks for but doesn't receive.
-
-**2. Update `minimumCompatibleApiVersion` when a breaking change ships.**
-`minimumCompatibleApiVersion` is defined in `ios/.../Services/AuthService.swift`. The iOS app compares the server's reported `apiVersion` (from `GET /auth/status`) against this constant and shows a non-blocking warning banner if the server is too old.
-
-Raise `minimumCompatibleApiVersion` to the current release version when a change meets **any** of these criteria:
-- A new field is added that is **required** (non-optional) in the GraphQL response and has no safe default value.
-- A field type changes in a way that would cause existing decoders to fail (e.g. `Int` → `String`).
-- A relation is added whose absence would leave a view broken or empty in a confusing way.
-- A new enum value is added **and** it has no `unknown` fallback in the iOS model yet.
-
-Do **not** raise `minimumCompatibleApiVersion` for:
-- New optional fields (safe, decode to `nil`).
-- New enum cases when the iOS enum already has a `.unknown` fallback.
-- Web-only or API-internal changes with no iOS surface.
-
-The `apiVersion` string returned by `GET /auth/status` in `api/src/index.ts` should always match the current release version. Update it as part of the same commit as the schema change.
 
 ## GraphQL Patterns
 
@@ -260,13 +231,6 @@ When verifying builds, always build in this order:
 1. `cd api && npm run build` — API (TypeScript compilation)
 2. `cd web && npm run build` — Web admin dashboard (Next.js)
 3. `cd storefront && npm run build` — Storefront (Next.js)
-4. iOS via `xcodebuild` (when iOS changes were made)
-
-### iOS Build Command
-```bash
-xcodebuild -scheme InventoryDifferent -destination 'platform=iOS Simulator,id=9116C8FB-2461-4260-B7DD-FE254FD202DE' build 2>&1 | grep -E "(BUILD SUCCEEDED|BUILD FAILED|error:)"
-```
-SourceKit/LSP will often report "Cannot find type X in scope" for cross-file references — these are indexing artifacts, not real errors. Always verify with `xcodebuild`, not IDE diagnostics.
 
 Also run `npx tsc --noEmit` in any changed package (api/web/storefront) — CI requires this to pass. A successful `npm run build` does not guarantee tsc is clean.
 
@@ -298,24 +262,9 @@ The app supports English, German, French, and Spanish. Every user-visible string
 - **Section naming convention**: top-level sections are `common`, `nav`, `home`, `detail`, `filter`, `sort`, `card`, `table`, `icons`, `form`, `login`, `chat`, and `pages.<pageName>` for page-specific strings
 - **Dynamic strings with counts/interpolation**: split into prefix/suffix keys or use JS concatenation — do not skip translation
 
-### iOS (SwiftUI)
-
-- **Translation files**: `ios/.../i18n/Translations.swift` (struct definitions), `Translations+en.swift`, `Translations+de.swift`, `Translations+fr.swift`
-- **Consuming translations**: all views have `@EnvironmentObject var lm: LocalizationManager` and use `let t = lm.t` at the top of `body` (or at the top of helper functions that return `some View`)
-- **Language selection**: via Settings.bundle — system default, English, Deutsch, or Français. Runtime switching without restart.
-  - Open iOS Settings → scroll to InventoryDifferent → Language → select your preference
-- **Adding a new feature**:
-  1. Add the key(s) to the appropriate struct in `Translations.swift`
-  2. Add English values in `Translations+en.swift`
-  3. Add German values in `Translations+de.swift`
-  4. Add French values in `Translations+fr.swift`
-  5. Use `lm.t.<section>.<key>` in views — never hardcode strings
-- **Scope rule**: `let t = lm.t` must be declared at function scope (not inside a ViewBuilder closure) so it's visible to all sibling closures in the same function
-
 ### Enum display names
 
 - **Web**: use `(t.status as Record<string, string>)[device.status]` to map API enum values to translated labels
-- **iOS**: enum `displayName` properties read from `LocalizationManager.shared.t` (singleton access)
 - **Note**: chart data labels coming from the API are still in English (Phase 6 — API-level i18n — is not yet implemented). Color maps in `StatsCharts.tsx` are keyed on English label strings for this reason.
 
 ## Commit Style
@@ -352,18 +301,9 @@ Instead, use one of these patterns:
 - **Server-side props**: Pass values from server components where `process.env` is available
 - The web app derives the API URL at runtime from `window.location.origin` in the browser (no `NEXT_PUBLIC_*` vars needed) and from `API_URL` env var during SSR. No build-time domain baking is required.
 
-## iOS Development Notes
-
-- When modifying the `Device` struct in `ios/.../Models/Device.swift`, always update ALL preview instances that construct a `Device`. These are found in:
-  - `EditDeviceView.swift` (preview at bottom)
-  - `ShareView.swift` (preview at bottom)
-- Failing to update previews will cause iOS build failures.
-
----
-
 ## Apple Serial Number Decoder (`tools/serial-decoder/`)
 
-A standalone Swift CLI that decodes Apple serial numbers to identify hardware models. Used to validate the algorithm before iOS integration.
+A standalone Swift CLI that decodes Apple serial numbers to identify hardware models and keep the web decoder data synchronized.
 
 ```bash
 cd tools/serial-decoder
@@ -389,8 +329,6 @@ python3 scripts/generate_decoder_data.py
 ```
 
 This regenerates:
-- `ios/.../SerialDecoder/Data/modern_models.swift` (chunked, avoids swift-frontend OOM)
-- `ios/.../SerialDecoder/Data/vintage_model_codes.swift`
 - `tools/serial-decoder/Sources/SerialDecoderLib/Data/modern_models.swift`
 - `tools/serial-decoder/Sources/SerialDecoderLib/Data/vintage_model_codes.swift`
 - `web/src/lib/modern_models.json` (imported directly by TypeScript — no TS wrapper needed)
@@ -423,7 +361,7 @@ python3 scripts/generate_decoder_data.py    # regenerate all platform files
 
 ### Template matching
 
-After decoding a serial, both iOS and web look for a matching template using normalised string comparison: lowercase, strip parenthetical suffixes like `(ROM 01)`, collapse whitespace, and treat `"mac"`/`"macintosh"` as equivalent. Both platforms must use identical logic — see `BarcodeScannerView.swift::findMatchingTemplate` and `web/src/app/page.tsx::findMatchingTemplate`.
+After decoding a serial, the web app looks for a matching template using normalised string comparison: lowercase, strip parenthetical suffixes like `(ROM 01)`, collapse whitespace, and treat `"mac"`/`"macintosh"` as equivalent. See `web/src/app/page.tsx::findMatchingTemplate`.
 
 ---
 
@@ -532,32 +470,6 @@ A comprehensive list of all implemented features, organized by platform. Use thi
 - No auth required; sensitive fields (notes, acquisition data) excluded from API responses
 - **Looking For** (`/looking-for`): public page showing wishlist items (name, manufacturer, model, category, year only — NO price/notes/source); grouped by group field; contact CTA
 
-### iOS App
-
-**Device list**: search, filter (category, status, favorites), sort, pull-to-refresh, barcode scanner, add device; toggle between list view and grid tile view (2-col portrait, adaptive landscape/iPad); preference persisted via `@AppStorage("deviceViewMode")`
-
-**Device detail** (tabbed): Overview, Specs, Images, Notes, Tasks tabs; favorite toggle; share QR code; edit/delete; value history chart (when ≥ 2 snapshots)
-
-**Image management**: gallery with full-size viewer; set thumbnail/shop/listing flags; delete with confirmation. Full-screen viewer supports: pinch-to-zoom (up to 6×), double-tap to zoom in/reset (works on image and black letterbox area), bounded pan (can't drag image off-screen), swipe on image at 1× to navigate prev/next, swipe past the edge boundary while zoomed to navigate prev/next, zoom resets to fit-to-screen when switching images
-
-**Add/Edit device**: full form with all fields, template selection, category picker, custom field values; template picker merges local and remote results in a single ranked list when the remote catalog is enabled; seeded local templates hidden when remote catalog active
-
-**Financials**: summary cards (6 metrics), interactive cumulative line chart (landscape), transaction list
-
-**Stats**: summary cards (total devices, working %, avg value, top category); bar charts for status, condition, category type, acquisition year, release decade, top manufacturers
-
-**AI Chat**: natural language queries about inventory via MCP, streaming responses, conversation history; voice input (speech-to-text via SFSpeechRecognizer) and voice output (text-to-speech via AVSpeechSynthesizer); conversation mode for hands-free back-and-forth; mic pulse animation while listening; toggle to mute/unmute spoken responses
-
-**Timeline**: horizontal scroll view of devices by release year with historical milestones
-
-**Value history chart**: per-device line chart in the Overview tab showing `estimatedValue` snapshots over time; snapshots auto-created on save when value changes (deduplicated)
-
-**Barcode scanner**: live camera preview, QR/barcode detection, serial number lookup, navigate to matched device
-
-**Login**: server URL configuration, password entry, JWT token persistence and refresh
-
-**Wishlist**: list of desired devices grouped by group field, sorted by priority; swipe to delete; tap to edit; "Mark as Acquired" opens AddDeviceView with pre-filled fields
-
 ### MCP Server (AI Integration)
 
 Tools available to Claude and other AI assistants:
@@ -574,7 +486,7 @@ Tools available to Claude and other AI assistants:
 - `add_note`: append a timestamped note to a device
 - `add_maintenance_task`: log a completed maintenance task (label, date, notes, cost) to a device
 
-Used by both the web CollectionChat component and the iOS ChatView.
+Used by the web CollectionChat component.
 
 ### Cross-Cutting Features
 
@@ -585,7 +497,7 @@ Used by both the web CollectionChat component and the iOS ChatView.
 - **Image roles**: thumbnail (list display), shop image (storefront card), listing image (storefront detail blurred background)
 - **Deep linking**: devices accessible via URL and QR/barcode code
 - **Bulk import/export**: ZIP with images, streaming, async progress tracking
-- **Multi-platform**: web admin, public storefront, iOS native — all on same GraphQL API
+- **Multi-platform**: web admin and public storefront on the same GraphQL API
 - **Auth-gated data**: financial/acquisition fields hidden from unauthenticated users; storefront always fully public
 - **Retro aesthetic**: rainbow stripe, vintage fonts, loading messages throughout web UI
 
@@ -603,7 +515,7 @@ Potential future features, roughly prioritized. These have not been started — 
 
 ### Medium Effort
 
-- **Maintenance reminders**: add an optional due date to maintenance tasks; surface overdue/upcoming tasks on the dashboard and iOS home screen.
+- **Maintenance reminders**: add an optional due date to maintenance tasks and surface overdue/upcoming tasks on the dashboard.
 - ~~**CSV export**: export the current filtered device list as CSV from the web admin (no images, just data).~~ **Implemented** — see Feature Catalog.
 - **Duplicate detection**: warn when adding a device whose name + manufacturer closely matches an existing one.
 - **Storefront inquiry form**: replace the contact email CTA with an in-app inquiry form that logs messages to the database.
@@ -612,7 +524,6 @@ Potential future features, roughly prioritized. These have not been started — 
 
 - **Multi-user / roles**: expand auth beyond single-password to named users with viewer vs. editor roles.
 - ~~**Public collection page**: a read-only view of the entire collection (not just for-sale items) for sharing with other collectors.~~ **Implemented** (The Archive showcase app) — see Feature Catalog.
-- ~~**Mobile barcode add**: from the iOS barcode scanner, if no match is found, pre-fill a new device form using the barcode to look up make/model from an external database (e.g., Open Library / Barcode Lookup API).~~ **Implemented** — see Feature Catalog.
 
 ---
 
@@ -658,10 +569,10 @@ Key facts for integration:
 - **Read templates:** `GET /templates?sort=name|year|rarity&cursor=&limit=` → `{ templates[], nextCursor, total }` — public, no auth required
 - **Get single template:** `GET /templates/:id` → full object merged with parent, includes `variants[]` and `images[]`
 - **Sync detection:** `GET /sync` → `{ version }` — poll cheaply; only pull full catalog on version change
-- **Enabled flag delivery:** `externalTemplatesEnabled: bool` is returned by the local API's `GET /auth/status` endpoint; both iOS (`AuthService.shared.externalTemplatesEnabled`) and web (`useAuth().externalTemplatesEnabled`) read it from there on startup — no extra round-trip needed. Source of truth is the `externalTemplatesEnabled` `systemSetting` DB key; `EXTERNAL_TEMPLATES_ENABLED` env var is the fallback when no DB record exists
+- **Enabled flag delivery:** `externalTemplatesEnabled: bool` is returned by the local API's `GET /auth/status` endpoint and read by the web app (`useAuth().externalTemplatesEnabled`) on startup. Source of truth is the `externalTemplatesEnabled` `systemSetting` DB key; `EXTERNAL_TEMPLATES_ENABLED` env var is the fallback when no DB record exists
 - **Field names match exactly** — all fields on InvDifferent2's local `Template` model exist on the remote with the same camelCase names; remote adds more fields (codename, gestaltId, ramSlots, ports, etc.)
 - **Integration hook:** `applyTemplateData()` in `web/src/components/DeviceForm.tsx` and `applyExternalTemplate()` in `AddDeviceView.swift` handle applying remote template data
-- **Image auto-import (web only):** when a remote template is applied on the create-device form, its thumbnail image(s) are fetched from the remote URL and uploaded as the new device's thumbnail; LIGHT/DARK modes are preserved; a single image gets `thumbnailMode: BOTH`; iOS does not yet do this
+- **Image auto-import:** when a remote template is applied on the create-device form, its thumbnail image(s) are fetched from the remote URL and uploaded as the new device's thumbnail; LIGHT/DARK modes are preserved; a single image gets `thumbnailMode: BOTH`
 - **Merged picker sort:** results are ranked exact match (0) → prefix (1) → contains (2), then alphabetical within tier, capped at 8; the list interleaves local user-created and remote entries
-- **Instance-specific fields never come from remote:** serialNumber, condition, dateAcquired, location, device notes (the `Note` model), maintenanceTasks, etc. stay local. `historicalNotes` (the free-text history field) IS copied from remote templates on web; iOS does not yet copy it.
+- **Instance-specific fields never come from remote:** serialNumber, condition, dateAcquired, location, device notes (the `Note` model), maintenanceTasks, etc. stay local. `historicalNotes` (the free-text history field) is copied from remote templates.
 - **isSeeded flag:** local templates created by the seed pipeline have `isSeeded: true`; user-created templates have `isSeeded: false` (default); seeded templates are hidden from the `/templates` admin page and the Add Device picker when the remote catalog is active

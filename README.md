@@ -1,6 +1,6 @@
 # Retro Inventory Different
 
-A self-hosted inventory management system for vintage computer collections. Track acquisition, repair history, sale, and value across a web admin dashboard, public storefront, iOS app, and AI assistant integration.
+A self-hosted inventory management system for vintage computer collections. Track acquisition, repair history, sale, and value across a web admin dashboard, public storefront, and AI assistant integration.
 
 ![License](https://img.shields.io/badge/license-CC%20BY--NC%204.0-lightgrey)
 
@@ -14,13 +14,10 @@ A self-hosted inventory management system for vintage computer collections. Trac
 | `web/` | Admin dashboard (Next.js 14) | 3000 |
 | `storefront/` | Public shop frontend (Next.js 14) | 3001 |
 | `mcp-server/` | MCP server for AI assistant integrations | stdio |
-| `ios/` | Native iOS app (SwiftUI) | — |
 
 **Admin dashboard:** card/table views, search and multi-filter, financial tracking, image management with non-destructive rotate and crop editing, notes, maintenance tasks, tags, custom fields, accessories checklist, reference links, bulk ZIP import/export, AI chat assistant, barcode/QR scanning, wishlist, stats charts, timeline, print view, trash with restore.
 
 **Storefront:** public product grid for items listed for sale, search, filter by status/category, item detail with specs and condition, "Looking For" page from your wishlist.
-
-**iOS app:** device list with search/filter/sort, detail view, image management with rotate and crop editing, add/edit device, financials, stats, AI chat with voice input/output and hands-free conversation mode, barcode scanner, value history chart.
 
 ---
 
@@ -70,7 +67,7 @@ Services will be available at:
 - Storefront: `http://your-host:3001`
 - API: `http://your-host:4000/graphql`
 
-> **iOS / remote access:** The web app resolves the API URL from the browser's origin automatically. For the iOS app — or any client on a different device — set `AUTH_URL` in your `.env` or configure the server URL directly in the iOS app settings.
+> **Remote access:** The web app resolves the API URL from the browser's origin automatically. Set `AUTH_URL` in your `.env` for clients that connect to the API from another device.
 
 > **MCP server:** If you plan to connect your collection up to an AI agent, you should uncomment the mcp service in the docker-compose file. The MCP server is available at `http://your-host:3002/mcp` and can be used with AI assistants that support MCP servers. You'll also need to set the `MCP_TOKEN` environment variable in your `.env` file.
 
@@ -157,7 +154,7 @@ acme:
 |----------|-------------|
 | `POSTGRES_PASSWORD` | PostgreSQL password |
 | `AUTH_USERNAME` | If set, login requires both username and password (default: password only) |
-| `AUTH_PASSWORD` | Admin login password for the web app and iOS app (to make changes) |
+| `AUTH_PASSWORD` | Admin login password for the web app (required to make changes) |
 | `UPLOADS_PATH` | `./uploads` | Host path where device images are stored. Use an absolute path in production. |
 
 ### Recommended
@@ -236,22 +233,9 @@ CURRENCY=EUR
 
 Supported values: `USD`, `EUR`, `GBP`, `CAD`, `AUD`, `JPY`, `MXN`, `ARS`, `CLP`.
 
-### iOS App
-
-Change the language in iOS Settings:
-
-1. Open **Settings** app on your device
-2. Scroll down to **InventoryDifferent**
-3. Tap **Language**
-4. Select **System Default**, **English**, **Deutsch**, **Français**, or **Español**
-
-The app will switch languages immediately without needing to restart.
-
----
-
 ## Device Status Lifecycle
 
-Each device moves through a defined set of statuses. The web and iOS apps provide lifecycle shortcut buttons to transition between statuses without manually editing the device.
+Each device moves through a defined set of statuses. The web app provides lifecycle shortcut buttons to transition between statuses without manually editing the device.
 
 ### Statuses
 
@@ -284,46 +268,6 @@ In Repair → Repaired → Returned
 
 **Repair flow:** `In Repair` → `Repaired` → `Returned`  
 *(Repaired can step back to In Repair if the device needs more work)*
-
----
-
-## iOS App
-
-The iOS app connects to your self-hosted API. No App Store account needed for local/TestFlight distribution.
-
-### Build from Source
-
-1. Open `ios/InventoryDifferent/InventoryDifferent.xcodeproj` in Xcode
-2. Build and run (⌘R) on a simulator or device
-3. On first launch, enter your server URL (e.g., `https://inventory.yourdomain.com` or `http://192.168.1.x:4000`) and your `AUTH_PASSWORD`
-
-**Requirements:** macOS with Xcode 15+, iOS 17+ device or simulator.
-
-### Signing Setup (contributors)
-
-The project uses `Configurations/Shared.xcconfig` to manage signing identity. Your personal Team ID and bundle prefix are kept in a gitignored local file so they're never committed.
-
-**One-time setup:**
-
-```bash
-cd ios/InventoryDifferent/Configurations
-cp Local.xcconfig.template Local.xcconfig
-```
-
-Edit `Local.xcconfig` with your values:
-
-```xcconfig
-DEVELOPMENT_TEAM = YOUR_TEAM_ID_HERE   # developer.apple.com → Account → Membership
-BUNDLE_ID_PREFIX = com.yourname
-```
-
-`Local.xcconfig` is gitignored — it will never be committed. If you don't create it, the project defaults (the project owner's Team ID and `com.wottle` prefix) are used, which is fine for simulator builds.
-
-### TestFlight Distribution
-
-1. **Archive:** Product → Archive in Xcode
-2. **Upload:** Organizer → Distribute App → App Store Connect
-3. **TestFlight:** Add the build in App Store Connect and invite testers
 
 ---
 
@@ -466,7 +410,7 @@ By default, the Add Device form connects to the remote [TemplatesDifferent](http
 - Seeded (built-in) local templates are hidden from the `/templates` admin page to avoid duplication
 - The first launch fetches and caches the full catalog locally; subsequent launches use the cache (refreshed hourly or on catalog version change)
 
-**To disable the remote catalog**, go to **Settings → External Templates** and toggle it off. The change takes effect immediately for both the web app and the iOS app.
+**To disable the remote catalog**, go to **Settings → External Templates** and toggle it off. The change takes effect immediately in the web app.
 
 Alternatively, set `EXTERNAL_TEMPLATES_ENABLED=false` in your environment before the first launch — this acts as the initial default if the setting has never been saved from the Settings page.
 

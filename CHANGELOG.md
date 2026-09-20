@@ -10,6 +10,8 @@ All notable changes to Retro Inventory Different will be documented here.
 
 ### Changed
 
+- Removed the retired native iOS client and its web deep-link integration; mobile browsers continue to use the responsive web app.
+
 ### Fixed
 
 ---

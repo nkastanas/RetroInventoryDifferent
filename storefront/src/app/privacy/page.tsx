@@ -2,7 +2,7 @@ export default function PrivacyPage() {
   return (
     <div className="max-w-2xl mx-auto px-6 py-12 text-gray-900 dark:text-gray-100">
       <h1 className="text-3xl font-bold mb-2">Privacy Policy</h1>
-      <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Last updated: July 11, 2026</p>
+      <p className="text-sm text-gray-500 dark:text-gray-400 mb-8">Last updated: September 20, 2026</p>
 
       <p className="mb-6">
         Retro Inventory Different is a self-hosted application. This means your inventory
@@ -18,32 +18,6 @@ export default function PrivacyPage() {
         You are responsible for the security and backup of that server.
       </p>
 
-      <h2 className="text-xl font-semibold mt-8 mb-3">iOS App — Device Permissions</h2>
-      <p className="mb-2">The iOS app requests the following device permissions:</p>
-      <ul className="list-disc pl-6 mb-4 space-y-2">
-        <li>
-          <strong>Camera</strong> — used to scan barcodes and QR codes to quickly
-          locate devices in your inventory. Images are sent directly to your server;
-          they are not stored on any third-party service.
-        </li>
-        <li>
-          <strong>Microphone</strong> — used for voice input when chatting with the
-          AI collection assistant. Audio is processed on-device by iOS speech
-          recognition and converted to text before being sent to your server.
-        </li>
-        <li>
-          <strong>Speech Recognition</strong> — used to convert spoken questions into
-          text for the AI chat feature.
-        </li>
-        <li>
-          <strong>Photo Library (write only)</strong> — used to save generated asset
-          tag QR codes to your photo library when requested.
-        </li>
-      </ul>
-      <p className="mb-4">
-        None of the above data is sent to or stored by the developer.
-      </p>
-
       <h2 className="text-xl font-semibold mt-8 mb-3">AI Chat Feature</h2>
       <p className="mb-4">
         The AI chat feature sends queries about your collection to your self-hosted
@@ -54,9 +28,7 @@ export default function PrivacyPage() {
 
       <h2 className="text-xl font-semibold mt-8 mb-3">Analytics and Tracking</h2>
       <p className="mb-4">
-        The iOS app contains no analytics SDKs, no advertising SDKs, and no crash
-        reporting that sends data to the developer. The web storefront component
-        optionally supports Umami Analytics, a privacy-friendly analytics tool —
+        The web storefront optionally supports Umami Analytics, a privacy-friendly analytics tool —
         this is configured by you on your own server and its data is not accessible
         to the developer.
       </p>
@@ -68,8 +40,8 @@ export default function PrivacyPage() {
         <code className="text-sm bg-gray-100 dark:bg-gray-800 px-1 rounded">
           api.templates.inventorydifferent.com
         </code>
-        . When enabled, your server (not the iOS app directly) makes requests to
-        this service to fetch device template data. No personally identifiable
+        . When enabled, your server makes requests to this service to fetch device
+        template data. No personally identifiable
         information is sent in these requests.
       </p>
 

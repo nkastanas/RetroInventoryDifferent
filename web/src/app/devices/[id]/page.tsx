@@ -9,7 +9,6 @@ import { Download } from "lucide-react";
 import { ImageUploader } from "../../../components/ImageUploader";
 import { ShareModal } from "../../../components/ShareModal";
 import { LoadingPanel } from "../../../components/LoadingPanel";
-import { DeepLinkBanner } from "../../../components/DeepLinkBanner";
 import { useAuth } from "../../../lib/auth-context";
 import { useIsDarkMode } from "../../../lib/useIsDarkMode";
 import { pickThumbnail } from "../../../lib/pickThumbnail";
@@ -1134,8 +1133,6 @@ export default function DeviceDetailNew() {
 
   return (
     <div className="font-inter text-on-surface bg-[var(--background)]">
-      <DeepLinkBanner deviceId={id as string} />
-
       {/* Back nav row */}
       <div className="flex items-center justify-between mb-4">
         <Link href="/" className="inline-flex items-center gap-2 text-sm text-on-surface-variant hover:text-on-surface transition-colors group">

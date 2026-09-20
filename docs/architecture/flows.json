@@ -1,7 +1,6 @@
 {
   "packages": [
     { "id": "p-web",        "name": "Web",          "sub": "Next.js admin",             "tier": "client" },
-    { "id": "p-ios",        "name": "iOS",          "sub": "SwiftUI",                   "tier": "client" },
     { "id": "p-storefront", "name": "Storefront",   "sub": "Next.js shop",              "tier": "client" },
     { "id": "p-showcase",   "name": "Showcase",     "sub": "The Archive",               "tier": "client" },
     { "id": "p-mcp",        "name": "MCP Server",   "sub": "AI tools / stdio",          "tier": "middleware" },
@@ -11,7 +10,6 @@
   ],
   "edges": [
     { "id": "e-web-api",      "from": "p-web",        "to": "p-api",     "label": "GraphQL / REST" },
-    { "id": "e-ios-api",      "from": "p-ios",        "to": "p-api",     "label": "GraphQL / REST" },
     { "id": "e-store-api",    "from": "p-storefront", "to": "p-api",     "label": "GraphQL" },
     { "id": "e-showcase-api", "from": "p-showcase",   "to": "p-api",     "label": "GraphQL" },
     { "id": "e-mcp-api",      "from": "p-mcp",        "to": "p-api",     "label": "GraphQL" },
@@ -23,13 +21,13 @@
       "id": "create-device",
       "icon": "📦",
       "name": "Create Device",
-      "path": "Web / iOS → API → PostgreSQL",
+      "path": "Web → API → PostgreSQL",
       "steps": [
         {
           "title": "User submits create form",
           "desc": "Apollo Client fires the createDevice GraphQL mutation with a DeviceCreateInput payload. JWT in Authorization header.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "Resolver validates & writes",
@@ -46,8 +44,8 @@
         {
           "title": "Device returned to client",
           "desc": "Full Device object (with relations) returned. Apollo Client writes it to its normalised cache; UI re-renders.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         }
       ]
     },
@@ -55,13 +53,13 @@
       "id": "edit-device",
       "icon": "✏️",
       "name": "Edit Device",
-      "path": "Web / iOS → API → PostgreSQL",
+      "path": "Web → API → PostgreSQL",
       "steps": [
         {
           "title": "User saves changes",
           "desc": "Apollo Client fires updateDevice mutation with a DeviceUpdateInput. Only changed fields are sent.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "Resolver reads current state",
@@ -93,13 +91,13 @@
       "id": "delete-device",
       "icon": "🗑",
       "name": "Delete Device (soft)",
-      "path": "Web / iOS → API → PostgreSQL",
+      "path": "Web → API → PostgreSQL",
       "steps": [
         {
           "title": "User clicks Delete",
-          "desc": "deleteDevice(id) mutation fired from web Trash page or iOS device detail.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "desc": "deleteDevice(id) mutation fired from the web Trash page or device detail.",
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "Resolver sets deleted flag",
@@ -165,19 +163,19 @@
       "id": "add-photo",
       "icon": "📷",
       "name": "Add Photo",
-      "path": "Web / iOS → REST /upload → /uploads → createImage → PostgreSQL",
+      "path": "Web → REST /upload → /uploads → createImage → PostgreSQL",
       "steps": [
         {
           "title": "Client selects image file",
-          "desc": "Web: file input triggers. iOS: PHPickerViewController presents photo library. Image is held in memory ready to POST.",
-          "packages": ["p-web", "p-ios"],
+          "desc": "A web file input selects the image and holds it ready to upload.",
+          "packages": ["p-web"],
           "edges": []
         },
         {
           "title": "POST /upload (multipart/form-data)",
           "desc": "Client POSTs to /upload?deviceId=X. This is a REST endpoint — not GraphQL — handled by multer (2 GB limit). JWT required.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "File saved to /uploads",
@@ -203,19 +201,19 @@
       "id": "upload-video",
       "icon": "🎥",
       "name": "Upload Video",
-      "path": "Web / iOS → REST /upload → /uploads → createImage (async thumb) → PostgreSQL",
+      "path": "Web → REST /upload → /uploads → createImage (async thumb) → PostgreSQL",
       "steps": [
         {
           "title": "Client selects video file",
-          "desc": "Web: file input with video/* accept. iOS: PHPickerViewController with video media type.",
-          "packages": ["p-web", "p-ios"],
+          "desc": "A web file input configured for video selects the file.",
+          "packages": ["p-web"],
           "edges": []
         },
         {
           "title": "POST /upload",
           "desc": "Client POSTs the video to /upload?deviceId=X. multer accepts mp4/mov/webm/avi up to 2 GB.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "File saved to /uploads",
@@ -241,13 +239,13 @@
       "id": "delete-image",
       "icon": "🗑",
       "name": "Delete Image / Video",
-      "path": "Web / iOS → API → PostgreSQL + /uploads",
+      "path": "Web → API → PostgreSQL + /uploads",
       "steps": [
         {
           "title": "User clicks Delete on image",
-          "desc": "deleteImage(id) mutation fired from web device detail Photos tab or iOS Images tab.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "desc": "deleteImage(id) mutation fired from the web device detail Photos tab.",
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "Resolver fetches paths then deletes DB row",
@@ -267,13 +265,13 @@
       "id": "add-note",
       "icon": "📝",
       "name": "Add Note",
-      "path": "Web / iOS / MCP → API → PostgreSQL",
+      "path": "Web / MCP → API → PostgreSQL",
       "steps": [
         {
           "title": "Note submitted",
-          "desc": "createNote(input) mutation fired from web device detail, iOS Notes tab, or MCP add_note tool.",
-          "packages": ["p-web", "p-ios", "p-mcp"],
-          "edges": ["e-web-api", "e-ios-api", "e-mcp-api"]
+          "desc": "createNote(input) mutation fired from web device detail or the MCP add_note tool.",
+          "packages": ["p-web", "p-mcp"],
+          "edges": ["e-web-api", "e-mcp-api"]
         },
         {
           "title": "Resolver writes note",
@@ -287,13 +285,13 @@
       "id": "add-maintenance-task",
       "icon": "🔧",
       "name": "Add Maintenance Task",
-      "path": "Web / iOS / MCP → API → PostgreSQL",
+      "path": "Web / MCP → API → PostgreSQL",
       "steps": [
         {
           "title": "Task submitted",
-          "desc": "createMaintenanceTask(input) mutation fired from web, iOS, or MCP add_maintenance_task tool. Input includes label, dateCompleted, notes, optional cost.",
-          "packages": ["p-web", "p-ios", "p-mcp"],
-          "edges": ["e-web-api", "e-ios-api", "e-mcp-api"]
+          "desc": "createMaintenanceTask(input) mutation fired from web or the MCP add_maintenance_task tool. Input includes label, dateCompleted, notes, optional cost.",
+          "packages": ["p-web", "p-mcp"],
+          "edges": ["e-web-api", "e-mcp-api"]
         },
         {
           "title": "Resolver writes task",
@@ -307,13 +305,13 @@
       "id": "login",
       "icon": "🔐",
       "name": "Login",
-      "path": "Web / iOS → REST /auth/login → API",
+      "path": "Web → REST /auth/login → API",
       "steps": [
         {
           "title": "User submits password",
           "desc": "Client POSTs { password } to /auth/login. This is a REST endpoint — not GraphQL.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "API validates password",
@@ -324,8 +322,8 @@
         {
           "title": "JWT tokens issued",
           "desc": "API returns { accessToken (1h), refreshToken (7d) } signed with JWT_SECRET. Client stores tokens and attaches accessToken as Authorization: Bearer header on subsequent requests.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         }
       ]
     },
@@ -333,13 +331,13 @@
       "id": "token-refresh",
       "icon": "🔄",
       "name": "Token Refresh",
-      "path": "Web / iOS → REST /auth/refresh → API",
+      "path": "Web → REST /auth/refresh → API",
       "steps": [
         {
           "title": "Client detects expiring access token",
           "desc": "Before the 1-hour access token expires, client POSTs { refreshToken } to /auth/refresh.",
-          "packages": ["p-web", "p-ios"],
-          "edges": ["e-web-api", "e-ios-api"]
+          "packages": ["p-web"],
+          "edges": ["e-web-api"]
         },
         {
           "title": "API issues new access token",
@@ -519,12 +517,12 @@
       "id": "ai-query",
       "icon": "🤖",
       "name": "AI Query (Chat)",
-      "path": "iOS / Web → OpenAI → MCP Server → API → PostgreSQL",
+      "path": "Web → OpenAI → MCP Server → API → PostgreSQL",
       "steps": [
         {
           "title": "User types or speaks a question",
-          "desc": "iOS ChatView (SFSpeechRecognizer for voice input) or web CollectionChat sends the message to OpenAI with the MCP tool list attached.",
-          "packages": ["p-web", "p-ios"],
+          "desc": "Web CollectionChat sends the message to OpenAI with the MCP tool list attached.",
+          "packages": ["p-web"],
           "edges": []
         },
         {
@@ -541,8 +539,8 @@
         },
         {
           "title": "OpenAI composes response",
-          "desc": "Tool result fed back to OpenAI; model writes a natural-language reply. iOS streams text via AVSpeechSynthesizer if voice mode is on.",
-          "packages": ["p-web", "p-ios"],
+          "desc": "Tool result is fed back to OpenAI and the model writes a natural-language reply for the web client.",
+          "packages": ["p-web"],
           "edges": []
         }
       ]

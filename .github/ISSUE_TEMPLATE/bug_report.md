@@ -18,7 +18,6 @@ What you expected to happen.
 **Environment**
 - Deployment: (NAS / VPS / local Docker / other)
 - Browser (if web issue):
-- iOS version (if iOS issue):
 - Any relevant env vars (redact secrets):
 
 **Logs / screenshots**

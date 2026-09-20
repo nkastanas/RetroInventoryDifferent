@@ -13,8 +13,8 @@
 #
 # FIREWALL NOTES:
 #   The admin web app proxies ALL API calls internally — only port 3000 needs
-#   to be open for the web app to work. Port 4000 is only needed for iOS app
-#   or direct API access. Port 5432 (postgres) must NEVER be exposed externally.
+#   to be open for the web app to work. Port 4000 is only needed for direct API
+#   access. Port 5432 (postgres) must NEVER be exposed externally.
 #
 # SYNOLOGY / NAS USERS:
 #   Use 'docker compose' via SSH rather than Container Station's GUI.
