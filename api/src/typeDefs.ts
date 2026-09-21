@@ -58,6 +58,14 @@ export const typeDefs = gql`
     REPAIR_RETURN
   }
 
+  enum TimelineEventType {
+    IBM
+    DOS
+    WINDOWS
+    LINUX
+    PC_INDUSTRY
+  }
+
   type Location {
     id: Int!
     name: String!
@@ -315,6 +323,31 @@ export const typeDefs = gql`
     descriptionFr: String
     type:          String!
     sortOrder:     Int!
+  }
+
+  input TimelineEventCreateInput {
+    year: Int!
+    title: String!
+    description: String!
+    type: TimelineEventType!
+    sortOrder: Int
+    titleDe: String
+    descriptionDe: String
+    titleFr: String
+    descriptionFr: String
+  }
+
+  input TimelineEventUpdateInput {
+    id: Int!
+    year: Int
+    title: String
+    description: String
+    type: TimelineEventType
+    sortOrder: Int
+    titleDe: String
+    descriptionDe: String
+    titleFr: String
+    descriptionFr: String
   }
 
   type WishlistItem {
@@ -1004,6 +1037,9 @@ export const typeDefs = gql`
     createCategory(name: String!, type: String!, sortOrder: Int): Category!
     updateCategory(id: Int!, name: String, type: String, sortOrder: Int): Category!
     deleteCategory(id: Int!): Category!
+    createTimelineEvent(input: TimelineEventCreateInput!): TimelineEvent!
+    updateTimelineEvent(input: TimelineEventUpdateInput!): TimelineEvent!
+    deleteTimelineEvent(id: Int!): Boolean!
     createTemplate(input: TemplateCreateInput!): Template!
     updateTemplate(input: TemplateUpdateInput!): Template!
     deleteTemplate(id: Int!): Boolean!

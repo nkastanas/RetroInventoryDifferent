@@ -7,10 +7,12 @@ All notable changes to Retro Inventory Different will be documented here.
 ### Added
 
 - Exhibition Sheets: status filter chips on the device selection page — toggle one or more statuses (In Collection, For Sale, etc.) to narrow the device list; "Select All" respects the active filter.
+- Authenticated GraphQL operations to create, update, reorder, and delete timeline events.
 
 ### Changed
 
 - Removed the retired native iOS client and its web deep-link integration; mobile browsers continue to use the responsive web app.
+- Replaced the Apple-oriented collection timeline with 39 IBM PC, DOS, Windows, Linux, and PC-industry milestones spanning 1975–2005.
 
 ### Fixed
 

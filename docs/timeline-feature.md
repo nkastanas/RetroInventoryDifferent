@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Collection Timeline plots devices in your collection by their `releaseYear` alongside curated Apple product launches and computing milestones, giving historical context to what you own.
+The Collection Timeline plots devices in your collection by their `releaseYear` alongside curated IBM PC, DOS, Windows, Linux, and PC-industry milestones.
 
 Available at `/timeline` in the web admin.
 
@@ -12,7 +12,7 @@ Available at `/timeline` in the web admin.
 
 ### Event Data
 
-Timeline events are stored in the `TimelineEvent` database table and served via GraphQL. This means they can be added or edited without a code deploy — just insert rows directly into the database.
+Timeline events are stored in the `TimelineEvent` database table and served via GraphQL. Public clients can read them, while authenticated administrators can create, update, and delete them through the API.
 
 **Schema:**
 ```sql
@@ -21,7 +21,7 @@ TimelineEvent {
   year        INT
   title       TEXT
   description TEXT
-  type        TEXT       -- "apple" | "tech" | "cultural"
+  type        TEXT       -- IBM | DOS | WINDOWS | LINUX | PC_INDUSTRY
   sortOrder   INT        -- tie-breaks within the same year
   createdAt   TIMESTAMP
   updatedAt   TIMESTAMP
@@ -37,30 +37,27 @@ query {
 }
 ```
 
-### Adding / Editing Events
+### Maintaining Events
 
-**Via the database directly (recommended for now):**
-```sql
-INSERT INTO "TimelineEvent" (year, title, description, type, "sortOrder", "updatedAt")
-VALUES (1984, 'My New Event', 'Description here.', 'apple', 0, NOW());
-```
+Use the authenticated GraphQL operations `createTimelineEvent`, `updateTimelineEvent`, and `deleteTimelineEvent`. See [timeline-api.md](timeline-api.md) for the inputs and examples.
 
-**Via seed (re-run `npm run prisma:seed`):**
-The seed script skips events that already have a matching `title`, so re-running is safe.
+Default history is installed once by database migration. Seed runs do not recreate events deleted through the API.
 
 ### Event Types & Colors
 
 | type | Web color |
 |---|---|
-| `apple` | `bg-blue-500` |
-| `tech` | `bg-orange-500` |
-| `cultural` | `bg-purple-500` |
+| `IBM` | Blue |
+| `DOS` | Slate |
+| `WINDOWS` | Cyan |
+| `LINUX` | Green |
+| `PC_INDUSTRY` | Orange |
 
 ---
 
 ## Web Implementation
 
-- **Page**: `web/src/app/timeline/page.tsx` — `"use client"`, `useQuery` fetching both `devices` and `timelineEvents` in one query. Auth-gated via Apollo (returns error if unauthenticated).
+- **Page**: `web/src/app/(main)/timeline/page.tsx` — `"use client"`, `useQuery` fetching both `devices` and `timelineEvents` in one query.
 - **Component**: `web/src/components/TimelineView.tsx` — pure Tailwind, no chart library. Three-column grid: devices on the left, year badge center, events on the right.
 - **Menu**: Hamburger → Timeline (between Stats and Usage), auth-gated.
 
@@ -68,7 +65,7 @@ The seed script skips events that already have a matching `title`, so re-running
 
 ## Migration
 
-Migration file: `api/prisma/migrations/20260308000000_add_timeline_events/migration.sql`
+The table was introduced by `20260308000000_add_timeline_events`. The PC-history dataset is installed by `20260921000000_replace_apple_timeline`.
 
 Apply on a running database:
 ```bash
@@ -77,14 +74,11 @@ cd api && npx prisma migrate deploy
 
 Or via Docker:
 ```bash
-docker exec inventory2-api npx prisma migrate deploy
+docker compose -f docker-compose.local.yml exec api npx prisma migrate deploy
 ```
 
 ---
 
-## Seed
+## Default history
 
-55 events from 1975–2024 are seeded on first run. Re-running the seed is safe (skips existing titles):
-```bash
-cd api && npm run prisma:seed
-```
+The default dataset contains 39 events from 1975–2005. Inventory devices are independent of these events and continue to appear according to their own release years.

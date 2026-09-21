@@ -45,9 +45,12 @@ function buildRows(devices: TimelineDevice[], events: TimelineEvent[]): Timeline
 
 function eventDotColor(type: string) {
   switch (type) {
-    case "apple": return "bg-blue-500";
-    case "tech": return "bg-orange-500";
-    default: return "bg-orange-500";
+    case "IBM": return "bg-blue-600";
+    case "DOS": return "bg-slate-500";
+    case "WINDOWS": return "bg-cyan-500";
+    case "LINUX": return "bg-green-600";
+    case "PC_INDUSTRY": return "bg-orange-500";
+    default: return "bg-slate-400";
   }
 }
 
@@ -91,10 +94,19 @@ export default function TimelineView({
       {/* Legend */}
       <div className="mb-6 flex flex-wrap gap-4 text-xs text-[var(--muted-foreground)]">
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-2 h-2 rounded-full bg-blue-500" /> {t.pages.timeline.legendApple}
+          <span className="inline-block w-2 h-2 rounded-full bg-blue-600" /> {t.pages.timeline.legendIbm}
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="inline-block w-2 h-2 rounded-full bg-orange-500" /> {t.pages.timeline.legendTech}
+          <span className="inline-block w-2 h-2 rounded-full bg-slate-500" /> {t.pages.timeline.legendDos}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 rounded-full bg-cyan-500" /> {t.pages.timeline.legendWindows}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 rounded-full bg-green-600" /> {t.pages.timeline.legendLinux}
+        </span>
+        <span className="flex items-center gap-1.5">
+          <span className="inline-block w-2 h-2 rounded-full bg-orange-500" /> {t.pages.timeline.legendPcIndustry}
         </span>
         <span className="flex items-center gap-1.5">
           <span className="inline-block w-3 h-3 rounded border border-[var(--border)] bg-[var(--card)]" /> {t.pages.timeline.legendCollection}

@@ -234,45 +234,9 @@ sale values where relevant
 
 2.3 Timeline
 
-The current /timeline is strongly Apple-oriented.
+The Apple-oriented timeline is being replaced with an IBM PC and compatible-computing history covering the PC 5150, XT, AT, PS/2, ThinkPad, DOS, Windows, Linux, Intel, and key industry milestones from 1975–2005.
 
-We want a general personal-computing timeline, covering topics such as:
-
-IBM PC / PC XT / PC AT
-
-DOS
-
-Microsoft Windows
-
-Intel
-
-AMD
-
-Apple
-
-Commodore
-
-Amiga
-
-Atari
-
-CP/M
-
-Unix/Linux
-
-important storage/media developments
-
-important CPU generations
-
-important graphics/sound developments
-
-networking / Internet milestones
-
-selected workstation/server developments where relevant
-
-Stage 1
-
-Replace the Apple-heavy seed data with a balanced general computer-history dataset.
+Historical events remain separate from inventory devices. Public clients can read the timeline, while authenticated GraphQL operations support adding, editing, reordering, and deleting events without another code deployment.
 
 Stage 2
 

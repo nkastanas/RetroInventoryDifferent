@@ -469,8 +469,11 @@ export type Translations = {
       subtitle: string;
       loading: string;
       loadingSubtitle: string;
-      legendApple: string;
-      legendTech: string;
+      legendIbm: string;
+      legendDos: string;
+      legendWindows: string;
+      legendLinux: string;
+      legendPcIndustry: string;
       legendCollection: string;
       noData: string;
     };
@@ -1588,8 +1591,11 @@ export const en: Translations = {
       subtitle: "Your collection in historical context.",
       loading: "Loading timeline…",
       loadingSubtitle: "Consulting the archives",
-      legendApple: "Apple milestone",
-      legendTech: "Tech milestone",
+      legendIbm: "IBM milestone",
+      legendDos: "DOS milestone",
+      legendWindows: "Windows milestone",
+      legendLinux: "Linux milestone",
+      legendPcIndustry: "PC industry milestone",
       legendCollection: "In your collection",
       noData: "No timeline data. Add release years to devices or add events in the database.",
     },

@@ -41,6 +41,49 @@ function requireAuth(context: Context): void {
     }
 }
 
+const TIMELINE_EVENT_TYPES = new Set(['IBM', 'DOS', 'WINDOWS', 'LINUX', 'PC_INDUSTRY']);
+
+function cleanTimelineEventInput(input: any, requireAll: boolean): Record<string, unknown> {
+    const data: Record<string, unknown> = {};
+
+    if (requireAll || input.year !== undefined) {
+        if (!Number.isInteger(input.year) || input.year < 0 || input.year > 9999) {
+            throw new Error('Timeline event year must be an integer between 0 and 9999');
+        }
+        data.year = input.year;
+    }
+
+    for (const field of ['title', 'description'] as const) {
+        if (requireAll || input[field] !== undefined) {
+            const value = typeof input[field] === 'string' ? input[field].trim() : '';
+            if (!value) throw new Error(`Timeline event ${field} is required`);
+            data[field] = value;
+        }
+    }
+
+    if (requireAll || input.type !== undefined) {
+        if (!TIMELINE_EVENT_TYPES.has(input.type)) {
+            throw new Error('Invalid timeline event type');
+        }
+        data.type = input.type;
+    }
+
+    if (input.sortOrder !== undefined) {
+        if (!Number.isInteger(input.sortOrder)) throw new Error('Timeline event sortOrder must be an integer');
+        data.sortOrder = input.sortOrder;
+    } else if (requireAll) {
+        data.sortOrder = 0;
+    }
+
+    for (const field of ['titleDe', 'descriptionDe', 'titleFr', 'descriptionFr'] as const) {
+        if (input[field] !== undefined) {
+            data[field] = input[field] == null || input[field].trim() === '' ? null : input[field].trim();
+        }
+    }
+
+    return data;
+}
+
 // Sensitive fields to hide from unauthenticated users
 const SENSITIVE_DEVICE_FIELDS = [
     'priceAcquired',
@@ -1218,6 +1261,26 @@ export const resolvers = {
             } catch {
                 return false;
             }
+        },
+        createTimelineEvent: async (_parent: any, args: { input: any }, context: Context) => {
+            requireAuth(context);
+            return (context.prisma as any).timelineEvent.create({
+                data: cleanTimelineEventInput(args.input, true),
+            });
+        },
+        updateTimelineEvent: async (_parent: any, args: { input: any }, context: Context) => {
+            requireAuth(context);
+            const { id, ...input } = args.input;
+            const data = cleanTimelineEventInput(input, false);
+            if (Object.keys(data).length === 0) {
+                throw new Error('At least one timeline event field must be provided');
+            }
+            return (context.prisma as any).timelineEvent.update({ where: { id }, data });
+        },
+        deleteTimelineEvent: async (_parent: any, args: { id: number }, context: Context) => {
+            requireAuth(context);
+            await (context.prisma as any).timelineEvent.delete({ where: { id: args.id } });
+            return true;
         },
         createWishlistItem: async (_parent: any, args: { data: any }, context: Context) => {
             requireAuth(context);
