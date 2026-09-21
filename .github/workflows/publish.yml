@@ -1,10 +1,13 @@
 name: Publish GHCR Images
 
-# A version tag such as v1.0.0 builds and publishes four production images.
-# The workflow can also be started manually with a custom image tag.
+# A push to main publishes :latest after the code has been tested locally.
+# A version tag such as v1.0.0 publishes that version, and the workflow can
+# also be started manually with a custom image tag.
 
 on:
   push:
+    branches:
+      - main
     tags:
       - "v*"
 
@@ -68,12 +71,15 @@ jobs:
         env:
           EVENT_NAME: ${{ github.event_name }}
           INPUT_TAG: ${{ inputs.image_tag }}
+          GIT_REF_TYPE: ${{ github.ref_type }}
           GIT_TAG: ${{ github.ref_name }}
         run: |
           if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
             echo "value=$INPUT_TAG" >> "$GITHUB_OUTPUT"
-          else
+          elif [ "$GIT_REF_TYPE" = "tag" ]; then
             echo "value=$GIT_TAG" >> "$GITHUB_OUTPUT"
+          else
+            echo "value=latest" >> "$GITHUB_OUTPUT"
           fi
 
       - name: Build and publish ${{ matrix.name }}
