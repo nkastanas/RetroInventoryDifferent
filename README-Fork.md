@@ -488,8 +488,8 @@ docker compose -f docker-compose.local.yml up -d --build
 
 Target services:
 
-http://localhost:4001   web
-http://localhost:4000   API/GraphQL
+http://localhost:4000   web
+http://localhost:4444   API/GraphQL
 
 8. Production and Development Data Separation
 

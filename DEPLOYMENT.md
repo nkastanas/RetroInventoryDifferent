@@ -6,10 +6,10 @@ This project uses pre-built Linux/AMD64 images from GitHub Container Registry. T
 
 | Service | Image | Default host port |
 |---|---|---:|
-| API | `ghcr.io/nkastanas/retroinventorydifferent-api:latest` | 4000 |
-| Admin web | `ghcr.io/nkastanas/retroinventorydifferent-web:latest` | 3000 |
-| Storefront | `ghcr.io/nkastanas/retroinventorydifferent-storefront:latest` | 3001 |
-| Showcase | `ghcr.io/nkastanas/retroinventorydifferent-showcase:latest` | 3003 |
+| API | `ghcr.io/nkastanas/retroinventorydifferent-api:latest` | 4444 |
+| Admin web | `ghcr.io/nkastanas/retroinventorydifferent-web:latest` | 4000 |
+| Storefront | `ghcr.io/nkastanas/retroinventorydifferent-storefront:latest` | 4001 |
+| Showcase | `ghcr.io/nkastanas/retroinventorydifferent-showcase:latest` | 4003 |
 | PostgreSQL | `postgres:15-alpine` | Internal only |
 
 The Compose file does not include Traefik or another reverse proxy. Configure one separately if HTTPS or public internet access is required.
@@ -76,10 +76,10 @@ Compose recreates application containers whose images changed. It preserves the 
 Override host ports in `.env` when required:
 
 ```env
-API_PORT=4000
-WEB_PORT=3000
-STOREFRONT_PORT=3001
-SHOWCASE_PORT=3003
+API_PORT=4444
+WEB_PORT=4000
+STOREFRONT_PORT=4001
+SHOWCASE_PORT=4003
 ```
 
 PostgreSQL is not published to the host. Keep it internal.
@@ -114,8 +114,8 @@ docker compose -f docker-compose.local.yml ps
 
 Default local access:
 
-- API: `http://localhost:4000`
-- Admin web: `http://localhost:4001`
+- API: `http://localhost:4444`
+- Admin web: `http://localhost:4000`
 - Login: `admin` / `admin`
 
 The local stack uses the Compose project name `retroinventory-local` and separate `local_postgres_data` and `local_uploads` volumes.

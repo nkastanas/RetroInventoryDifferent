@@ -8,10 +8,10 @@
 #   4. docker compose up -d
 #
 # Access:
-#   Admin web:   http://your-host:3000
-#   Storefront:  http://your-host:3001
-#   Showcase:    http://your-host:3003
-#   API direct:  http://your-host:4000/graphql
+#   Admin web:   http://your-host:4000
+#   Storefront:  http://your-host:4001
+#   Showcase:    http://your-host:4003
+#   API direct:  http://your-host:4444/graphql
 # FIREWALL NOTES:
 #   The admin web app proxies ALL API calls internally — only port 3000 needs
 #   to be open for the web app to work. Port 4000 is only needed for direct API
@@ -47,7 +47,7 @@ services:
     container_name: inventory-api
     restart: unless-stopped
     ports:
-      - "${API_PORT:-4000}:4000"
+      - "${API_PORT:-4444}:4000"
     environment:
       NODE_ENV: production
       DATABASE_URL: postgres://${POSTGRES_USER:-inventory}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-inventory}
@@ -80,7 +80,7 @@ services:
     container_name: inventory-web
     restart: unless-stopped
     ports:
-      - "${WEB_PORT:-3000}:3000"
+      - "${WEB_PORT:-4000}:3000"
     environment:
       NODE_ENV: production
       API_URL: http://api:4000
@@ -101,7 +101,7 @@ services:
     container_name: inventory-storefront
     restart: unless-stopped
     ports:
-      - "${STOREFRONT_PORT:-3001}:3001"
+      - "${STOREFRONT_PORT:-4001}:3001"
     environment:
       NODE_ENV: production
       API_URL: http://api:4000
@@ -120,7 +120,7 @@ services:
     container_name: inventory-showcase
     restart: unless-stopped
     ports:
-      - "${SHOWCASE_PORT:-3003}:3000"
+      - "${SHOWCASE_PORT:-4003}:3000"
     environment:
       NODE_ENV: production
       API_URL: http://api:4000

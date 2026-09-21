@@ -8,11 +8,12 @@ A self-hosted inventory management system for vintage computer collections. Trac
 
 ## What's Included
 
-| Service | Description | Default Port |
+| Service | Description | Container Port |
 |---|---|---|
 | `api/` | GraphQL API (Express + Apollo + Prisma + PostgreSQL) | 4000 |
 | `web/` | Admin dashboard (Next.js 14) | 3000 |
 | `storefront/` | Public shop frontend (Next.js 14) | 3001 |
+| `showcase/` | Public collection showcase (Next.js 14) | 3000 |
 | `mcp-server/` | MCP server for AI assistant integrations | stdio |
 
 **Admin dashboard:** card/table views, search and multi-filter, financial tracking, image management with non-destructive rotate and crop editing, notes, maintenance tasks, tags, custom fields, accessories checklist, reference links, bulk ZIP import/export, AI chat assistant, barcode/QR scanning, wishlist, stats charts, timeline, print view, trash with restore.
@@ -60,10 +61,10 @@ docker compose up -d
 
 Services will be available at:
 
-- Web: `http://your-host:3000`
-- Storefront: `http://your-host:3001`
-- Showcase: `http://your-host:3003`
-- API: `http://your-host:4000/graphql`
+- Web: `http://your-host:4000`
+- Storefront: `http://your-host:4001`
+- Showcase: `http://your-host:4003`
+- API: `http://your-host:4444/graphql`
 
 Override these defaults with `API_PORT`, `WEB_PORT`, `STOREFRONT_PORT`, and `SHOWCASE_PORT` in `.env`.
 
