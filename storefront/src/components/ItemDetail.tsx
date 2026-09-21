@@ -498,7 +498,6 @@ export default function ItemDetail({ id, contactEmail }: ItemDetailProps) {
                                         <DetailRow label="Graphics" value={device.graphicsChip} />
                                         <DetailRow label="Storage" value={device.storageEntries?.length > 0 ? device.storageEntries.map((s: any) => s.value).join(', ') : null} />
                                         <DetailRow label="Operating System" value={device.osEntries?.length > 0 ? device.osEntries.map((o: any) => o.value).join(', ') : null} />
-                                        <DetailRow label="Wi-Fi" value={device.isWifiEnabled ? 'Yes' : device.isWifiEnabled === false ? 'No' : null} />
                                     </>
                                 )}
                             </dl>

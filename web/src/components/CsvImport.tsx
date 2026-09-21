@@ -70,7 +70,7 @@ type FieldKey =
   | 'dateAcquired' | 'whereAcquired' | 'priceAcquired' | 'estimatedValue'
   | 'listPrice' | 'soldPrice' | 'soldDate'
   | 'cpu' | 'ram' | 'graphics' | 'storage' | 'operatingSystem'
-  | 'isWifiEnabled' | 'isPramBatteryRemoved' | 'lastPowerOnDate';
+  | 'isPramBatteryRemoved' | 'lastPowerOnDate';
 
 const FIELD_KEYS: FieldKey[] = [
   'name','additionalName','manufacturer','modelNumber','serialNumber',
@@ -80,7 +80,7 @@ const FIELD_KEYS: FieldKey[] = [
   'dateAcquired','whereAcquired','priceAcquired','estimatedValue',
   'listPrice','soldPrice','soldDate',
   'cpu','ram','graphics','storage','operatingSystem',
-  'isWifiEnabled','isPramBatteryRemoved','lastPowerOnDate',
+  'isPramBatteryRemoved','lastPowerOnDate',
 ];
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -277,7 +277,6 @@ export default function CsvImport({ categories, onImportComplete }: CsvImportPro
 
             case 'isFavorite': input.isFavorite = parseBool(raw); break;
             case 'isAssetTagged': input.isAssetTagged = parseBool(raw); break;
-            case 'isWifiEnabled': input.isWifiEnabled = parseBool(raw); break;
             case 'isPramBatteryRemoved': input.isPramBatteryRemoved = parseBool(raw); break;
 
             case 'category': {

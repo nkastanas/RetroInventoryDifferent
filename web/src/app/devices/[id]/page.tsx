@@ -1452,7 +1452,6 @@ export default function DeviceDetailNew() {
                 {device.displayType && <SpecField label={t.detail.displayType} value={device.displayType + (device.displayVariant ? ` · ${device.displayVariant}` : '')} />}
                 {device.nativeResolution && <SpecField label={t.detail.resolution} value={device.nativeResolution} />}
                 {device.osEntries?.length > 0 && <SpecField label={t.detail.operatingSystem} value={device.osEntries.map((o: any) => o.value).join(', ')} />}
-                {device.isWifiEnabled != null && <SpecField label={t.detail.wifi} value={device.isWifiEnabled ? t.common.yes : t.common.no} />}
                 {device.pramBatteryInstalled != null && <SpecField label={t.detail.pramBattery} value={device.pramBatteryInstalled ? t.detail.pramInstalled : t.detail.pramRemoved} />}
                 {device.pramBatteryExpiryDate && <SpecField label={t.detail.pramExpiry} value={new Date(device.pramBatteryExpiryDate).toLocaleDateString(localeFromLang(locale))} />}
               </div>

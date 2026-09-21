@@ -89,7 +89,7 @@ MAKING CHANGES:
 - After making a change, confirm what was updated (e.g., "Done! Logged today as the last power-on date for your Mac 512k")
 - For "I just sold X for $Y": set status=SOLD, soldPrice=Y, soldDate=today's ISO date
 - For "I powered on X today": set lastPowerOnDate=today's ISO date
-- For maintenance logs: use a descriptive label (e.g., "Recap analog board", "Replaced PRAM battery")
+- For maintenance logs: use a descriptive label (e.g., "Recap analog board", "Replaced CMOS battery")
 - Today's date in ISO format: ${new Date().toISOString()}
 
 Be enthusiastic about vintage computing while staying concise and helpful!`,
@@ -538,7 +538,7 @@ Be enthusiastic about vintage computing while staying concise and helpful!`,
           description: 'Log a completed maintenance task for a device. Use for recording repairs, recaps, cleaning, part replacements, etc.',
           parameters: z.object({
             deviceId: z.number().describe('The device ID'),
-            label: z.string().describe('Short description of the task (e.g., "Recap analog board", "Replaced PRAM battery", "Screen cleaning")'),
+            label: z.string().describe('Short description of the task (e.g., "Recap analog board", "Replaced CMOS battery", "Screen cleaning")'),
             dateCompleted: z.string().describe('ISO date string for when the task was completed (e.g., "2026-03-30T00:00:00.000Z")'),
             notes: z.string().optional().describe('Additional notes about the task'),
             cost: z.number().optional().describe('Cost of the task in dollars (parts, labor, etc.)'),

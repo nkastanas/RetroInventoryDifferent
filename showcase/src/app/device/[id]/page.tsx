@@ -180,8 +180,7 @@ export default async function DeviceDetailPage({ params }: { params: { id: strin
   // Spec cards
   const hardwareNotes: string[] = [];
   if (device.hasOriginalBox) hardwareNotes.push('Original box included');
-  if (device.pramBatteryInstalled === false) hardwareNotes.push('PRAM battery removed');
-  if (device.isWifiEnabled) hardwareNotes.push('Wi-Fi enabled');
+  if (device.pramBatteryInstalled === false) hardwareNotes.push('CMOS battery removed');
 
   const cpuLabel = [device.cpuType, device.cpuSpeed].filter(Boolean).join(' @ ');
   const storageLabel = device.storageEntries

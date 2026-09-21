@@ -117,7 +117,7 @@ function buildIconRow(device: DeviceCardNewProps['device']): IconSpec[] {
     style: FILLED,
   });
 
-  // 5. PRAM battery — computers only
+  // 5. CMOS battery — computers only
   if (device.category.type === 'COMPUTER') {
     icons.push({
       name: (() => { const inst = !!device.pramBatteryInstalled; const exp = device.pramBatteryExpiryDate ? new Date(device.pramBatteryExpiryDate) : null; const ok = !inst || (exp !== null && exp > new Date()); return !inst ? 'battery_0_bar' : ok ? 'battery_full' : 'battery_alert'; })(),

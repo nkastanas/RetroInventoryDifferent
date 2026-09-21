@@ -442,12 +442,8 @@ function WishlistForm({ categories, templates, existingGroups, initialValues, is
           </div>
           <div className="flex gap-6">
             <label className={checkboxLabel}>
-              <input type="checkbox" name="isWifiEnabled" checked={!!form.isWifiEnabled} onChange={handleChange} className="rounded" />
-              {t.detail.wifiEnabled}
-            </label>
-            <label className={checkboxLabel}>
               <input type="checkbox" name="pramBatteryInstalled" checked={!!form.pramBatteryInstalled} onChange={handleChange} className="rounded" />
-              PRAM Battery Installed
+              CMOS Battery Installed
             </label>
           </div>
         </div>

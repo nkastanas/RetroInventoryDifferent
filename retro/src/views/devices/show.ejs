@@ -97,7 +97,6 @@
         <% if (device.osEntries && device.osEntries.length) { %>
           <tr><td class="spec-label">OS</td><td><%= device.osEntries.sort(function(a,b){return a.sortOrder-b.sortOrder;}).map(function(e){return e.value;}).join(', ') %></td></tr>
         <% } %>
-        <% if (device.isWifiEnabled) { %><tr><td class="spec-label">Wi-Fi</td><td>Yes</td></tr><% } %>
         <% if (device.hasOriginalBox) { %><tr><td class="spec-label">Original Box</td><td>Yes</td></tr><% } %>
       </table>
     </div>

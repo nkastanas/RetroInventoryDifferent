@@ -821,7 +821,6 @@ export function DeviceForm({ device, mode, prefill }: DeviceFormProps) {
             if (formData.nativeResolution) input.nativeResolution = formData.nativeResolution;
             if (formData.storage) input.storage = formData.storage;
             if (formData.operatingSystem) input.operatingSystem = formData.operatingSystem;
-            input.isWifiEnabled = formData.isWifiEnabled;
             input.pramBatteryInstalled = formData.pramBatteryInstalled;
             if (formData.pramBatteryExpiryDate) input.pramBatteryExpiryDate = parseLocalDate(formData.pramBatteryExpiryDate);
         }
@@ -1646,17 +1645,6 @@ export function DeviceForm({ device, mode, prefill }: DeviceFormProps) {
                         </FormField>
 
                         <div className="flex flex-col gap-3 justify-center">
-                            <label className="flex items-center gap-2 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="isWifiEnabled"
-                                    checked={formData.isWifiEnabled}
-                                    onChange={handleChange}
-                                    className="w-4 h-4 rounded border-[var(--border)] text-[var(--apple-blue)] focus:ring-[var(--apple-blue)]"
-                                />
-                                <span className="text-sm text-[var(--foreground)]">{t.detail.wifiEnabled}</span>
-                            </label>
-
                             <label className="flex items-center gap-2 cursor-pointer">
                                 <input
                                     type="checkbox"

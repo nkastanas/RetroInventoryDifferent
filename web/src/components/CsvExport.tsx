@@ -77,7 +77,6 @@ const FIELDS: FieldDef[] = [
   { key: 'storage',              group: 'specs', format: (d) => sanitize(d.storage) },
   { key: 'graphics',             group: 'specs', format: (d) => sanitize(d.graphics) },
   { key: 'operatingSystem',      group: 'specs', format: (d) => sanitize(d.operatingSystem) },
-  { key: 'isWifiEnabled',        group: 'specs', format: (d) => (d.isWifiEnabled == null ? '' : bool(d.isWifiEnabled)) },
   { key: 'isPramBatteryRemoved', group: 'specs', format: (d) => (d.isPramBatteryRemoved == null ? '' : bool(d.isPramBatteryRemoved)) },
 
   // Text
