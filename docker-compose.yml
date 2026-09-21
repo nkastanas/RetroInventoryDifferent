@@ -1,114 +1,123 @@
-# version: '3.8'
+# Production deployment using pre-built images from GitHub Container Registry.
+# No reverse proxy is included; services are exposed directly on host ports.
+#
+# Usage:
+#   1. Copy .env.example to .env and configure (passwords, etc.)
+#   2. Create the uploads directory configured by UPLOADS_PATH
+#   3. docker compose pull
+#   4. docker compose up -d
+#
+# Access:
+#   Admin web:   http://your-host:3000
+#   Storefront:  http://your-host:3001
+#   Showcase:    http://your-host:3003
+#   API direct:  http://your-host:4000/graphql
+# FIREWALL NOTES:
+#   The admin web app proxies ALL API calls internally — only port 3000 needs
+#   to be open for the web app to work. Port 4000 is only needed for direct API
+#   access. PostgreSQL is internal and must never be exposed externally.
+#
+# SYNOLOGY / NAS USERS:
+#   Use 'docker compose' via SSH rather than Container Station's GUI.
+#   The GUI may not properly create the shared 'internal' network, causing
+#   containers to fail to reach each other by name. See DEPLOYMENT.md.
 
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: invdifferent2-db
+    container_name: inventory-db
     restart: unless-stopped
-    ports:
-      - "${POSTGRES_PORT:-5432}:5432"  # Exposed for migration scripts - can remove after migration
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password}
+      POSTGRES_USER: ${POSTGRES_USER:-inventory}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Database password required}
       POSTGRES_DB: ${POSTGRES_DB:-inventory}
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - invdif_simple_postgres_data:/var/lib/postgresql/data
     networks:
-      - inv_network
+      - internal
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-inventory} -d ${POSTGRES_DB:-inventory}"]
+      interval: 10s
       timeout: 5s
       retries: 5
 
   api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile
-    container_name: invdifferent2-api
+    image: ghcr.io/nkastanas/retroinventorydifferent-api:latest
+    pull_policy: always
+    container_name: inventory-api
     restart: unless-stopped
     ports:
       - "${API_PORT:-4000}:4000"
     environment:
       NODE_ENV: production
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-inventory}
+      DATABASE_URL: postgres://${POSTGRES_USER:-inventory}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-inventory}
       PORT: 4000
-      AUTH_USERNAME: ${AUTH_USERNAME:-user}
-      AUTH_PASSWORD: ${AUTH_PASSWORD:-pass}
+      DOMAIN: ${DOMAIN:-}
+      SHOP_DOMAIN: ${SHOP_DOMAIN:-}
+      SHOWCASE_DOMAIN: ${SHOWCASE_DOMAIN:-}
+      AUTH_USERNAME: ${AUTH_USERNAME:-}
+      AUTH_PASSWORD: ${AUTH_PASSWORD:-}
       JWT_SECRET: ${JWT_SECRET:-}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      EXTERNAL_TEMPLATES_ENABLED: ${EXTERNAL_TEMPLATES_ENABLED:-true}
     volumes:
-      - ../InvDifferent2-data/uploads:/app/uploads
-      - ./category.sql:/app/category.sql:ro
-      - ./device_templates.sql:/app/device_templates.sql:ro
+      - ${UPLOADS_PATH:-./uploads}:/app/uploads
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - inv_network
+      - internal
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:4000/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 120s
 
   web:
-    build:
-      context: ./web
-      dockerfile: Dockerfile
-    container_name: invdifferent2-web
+    image: ghcr.io/nkastanas/retroinventorydifferent-web:latest
+    pull_policy: always
+    container_name: inventory-web
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-3000}:3000"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:4000/graphql
       API_URL: http://api:4000
-      OPENAI_API_KEY: ${OPENAI_API_KEY}
-      LANGUAGE: ${LANGUAGE:-en}
+      LANGUAGE: ${LANGUAGE:-}
       CURRENCY: ${CURRENCY:-USD}
-      # Note: Client-side calls need public URL, Server-side calls use internal API_URL
-      # Set UMAMI_URL and UMAMI_WEBSITE_ID directly on the container for analytics
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      UMAMI_URL: ${UMAMI_URL:-}
+      UMAMI_WEBSITE_ID: ${UMAMI_WEBSITE_ID:-}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
-      - inv_network
+      - internal
 
   storefront:
-    build:
-      context: ./storefront
-      dockerfile: Dockerfile
-    container_name: invdifferent2-storefront
+    image: ghcr.io/nkastanas/retroinventorydifferent-storefront:latest
+    pull_policy: always
+    container_name: inventory-storefront
     restart: unless-stopped
     ports:
       - "${STOREFRONT_PORT:-3001}:3001"
     environment:
       NODE_ENV: production
-      NEXT_PUBLIC_API_URL: http://localhost:4000
+      API_URL: http://api:4000
       CONTACT_EMAIL: ${CONTACT_EMAIL:-store@example.com}
-      # Set UMAMI_URL and UMAMI_WEBSITE_ID directly on the container for analytics
+      UMAMI_URL: ${UMAMI_URL:-}
+      UMAMI_WEBSITE_ID: ${UMAMI_STOREFRONT_WEBSITE_ID:-}
     depends_on:
-      - api
-    networks:
-      - inv_network
-
-  mcp-server:
-    build:
-      context: ./mcp-server
-      dockerfile: Dockerfile
-    container_name: invdifferent2-mcp
-    restart: unless-stopped
-    ports:
-      - "${MCP_PORT:-3002}:3002"
-    environment:
-      NODE_ENV: production
-      DATABASE_URL: postgres://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-inventory}
-    depends_on:
-      postgres:
+      api:
         condition: service_healthy
     networks:
-      - inv_network
+      - internal
 
   showcase:
-    build:
-      context: ./showcase
-      dockerfile: Dockerfile
-    container_name: invdifferent2-showcase
+    image: ghcr.io/nkastanas/retroinventorydifferent-showcase:latest
+    pull_policy: always
+    container_name: inventory-showcase
     restart: unless-stopped
     ports:
       - "${SHOWCASE_PORT:-3003}:3000"
@@ -121,29 +130,15 @@ services:
       UMAMI_URL: ${UMAMI_URL:-}
       UMAMI_SHOWCASE_WEBSITE_ID: ${UMAMI_SHOWCASE_WEBSITE_ID:-}
     depends_on:
-      - api
+      api:
+        condition: service_healthy
     networks:
-      - inv_network
-
-  # retro:
-  #   build:
-  #     context: ./retro
-  #     dockerfile: Dockerfile
-  #   container_name: invdifferent2-retro
-  #   restart: unless-stopped
-  #   ports:
-  #     - "${RETRO_PORT:-3004}:3004"
-  #   environment:
-  #     API_URL: http://api:4000
-  #     RETRO_THEME: system7   # system7 | earlyweb | platinum
-  #   depends_on:
-  #     - api
-  #   networks:
-  #     - inv_network
+      - internal
 
 networks:
-  inv_network:
+  internal:
     driver: bridge
 
 volumes:
-  postgres_data:
+  # Retain this key so existing production deployments reuse their database.
+  invdif_simple_postgres_data:

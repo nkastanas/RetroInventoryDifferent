@@ -34,7 +34,7 @@ PRs for bug fixes, dependency updates, documentation improvements, and items fro
 
 ```bash
 # Start the database
-docker compose up postgres -d
+docker compose -f docker-compose.local.yml up postgres -d
 
 # API (port 4000)
 cd api
@@ -90,8 +90,8 @@ Every PR runs tests automatically. Merging requires all checks to pass.
 | Event | What runs |
 |-------|-----------|
 | Pull request | Unit tests, TypeScript check, E2E tests |
-| Merge to `main` | All tests, then Docker images publish as `:latest` |
-| Push to `dev` | All tests, then Docker images publish as `:dev` |
+| Merge to `main` | Tests run and Docker images publish as `:latest` |
+| Push to `dev` | Unit and TypeScript tests run; no image is published |
 
 ## Code Style
 

@@ -12,33 +12,25 @@ InvDifferent2 is a vintage computer collection inventory management system. It's
 
 ## Distribution Model
 
-This project is distributed as pre-built Docker images published to Docker Hub (`wottle/inventory-*:latest`). The primary deployment path for end users is pulling these images via `docker-compose.simple.yml` (simple/local) or `docker-compose.prod.yml` (Traefik + HTTPS). End-user setup instructions live in `README.md`.
+Production uses Linux/AMD64 images published to GitHub Container Registry under `ghcr.io/nkastanas/retroinventorydifferent-*`. The default `docker-compose.yml` pulls those images and exposes direct host ports without bundling a reverse proxy. End-user setup instructions live in `README.md`.
 
 ## Branch & PR Workflow
 
-All work follows a **dev-first** flow — `dev` is the staging branch, `main` is production:
+Use feature branches for work and treat `main` as the production image branch:
 
-1. Create a feature or fix branch from `dev` (e.g. `fix/my-bug`, `feature/my-feature`)
-2. Open a PR targeting **`dev`** — never target `main` directly
-3. Merge to `dev` → GitHub Actions builds and pushes `:dev` images for staging verification
-4. Test on staging (`docker compose pull && docker compose up -d`)
-5. When confirmed working, merge `dev` → `main` to publish `:latest` for end users
+1. Create a feature or fix branch from `main`.
+2. Test locally with `docker-compose.local.yml` and the relevant package tests.
+3. Open a pull request targeting `main`; the test workflow validates the change.
+4. Merge tested code into `main` to publish `:latest` images.
+5. Push a version tag such as `v1.0.0` when a fixed release tag is required.
 
-To promote `dev` → `main`:
-- Merge via PR, **or**
-- Via Actions → Retag Docker Images (skips rebuild if images are already good)
-
-Users update by running `docker compose pull && docker compose up -d` — migrations run automatically on container start via `api/entrypoint.sh`.
-
-The `./build-and-push.sh` script still exists for manual local builds if needed, but the normal path is CI/CD via GitHub Actions.
-
-The `docker-compose.simple.yml` file is for users without a reverse proxy (direct port exposure). The `docker-compose.prod.yml` file is for Traefik deployments with HTTPS using pre-built Hub images. The `docker-compose.build.yml` file is for building from source with Traefik. The `docker-compose.nas.yml` file is the author's personal NAS deployment and is not intended as a template for other users.
+Production updates remain manual: `docker compose pull && docker compose up -d`. Migrations run automatically on API startup through `api/entrypoint.sh`.
 
 ## Development Commands
 
 ```bash
-# Start all services with Docker
-docker-compose up
+# Build and start the isolated local API and web stack
+docker compose -f docker-compose.local.yml up -d --build
 
 # Individual service development
 cd api && npm run build && npm start    # API on port 4000
@@ -195,10 +187,9 @@ Key variables (see `.env.example`):
 
 ## Deployment
 
-- Development: `docker-compose.yml`
-- Production (pre-built): `docker-compose.prod.yml` with Traefik reverse proxy
-- Production (build from source): `docker-compose.build.yml` with Traefik reverse proxy
-- NAS deployment: `docker-compose.nas.yml`
+- Production: `docker-compose.yml` pulls GHCR images
+- Local source build: `docker-compose.local.yml`
+- Automated-test database: `docker-compose.test.yml`
 
 ### Database Migrations
 
@@ -208,22 +199,16 @@ See `DEPLOYMENT.md` for detailed deployment instructions.
 
 ## Docker Images
 
-Docker Hub images (all multi-arch: amd64 + arm64):
-- `wottle/inventory-api:latest`
-- `wottle/inventory-web:latest`
-- `wottle/inventory-storefront:latest`
-- `wottle/inventory-mcp:latest`
-
-Build and push all images: `./build-and-push.sh`
+GitHub Actions publishes Linux/AMD64 images:
+- `ghcr.io/nkastanas/retroinventorydifferent-api:latest`
+- `ghcr.io/nkastanas/retroinventorydifferent-web:latest`
+- `ghcr.io/nkastanas/retroinventorydifferent-storefront:latest`
+- `ghcr.io/nkastanas/retroinventorydifferent-showcase:latest`
 
 ## GitHub Actions Workflow Files
 
-The security hook blocks the Write and Edit tools on `.github/workflows/*.yml` files. Use Bash with a heredoc instead:
-```bash
-cat > .github/workflows/foo.yml << 'EOF'
-...
-EOF
-```
+- `.github/workflows/test.yml` runs code and end-to-end checks.
+- `.github/workflows/publish.yml` publishes `:latest` from `main`, version tags from `v*`, and manually selected tags through `workflow_dispatch`.
 
 ## Build Verification Order
 

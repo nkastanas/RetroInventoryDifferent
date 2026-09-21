@@ -1,293 +1,157 @@
 # Deployment Guide
 
-This guide covers deploying the Vintage Inventory Management System across multiple platforms.
+This project uses pre-built Linux/AMD64 images from GitHub Container Registry. The production server pulls images; it does not build application source.
 
-## System Overview
+## Services
 
-The system consists of four main components:
+| Service | Image | Default host port |
+|---|---|---:|
+| API | `ghcr.io/nkastanas/retroinventorydifferent-api:latest` | 4000 |
+| Admin web | `ghcr.io/nkastanas/retroinventorydifferent-web:latest` | 3000 |
+| Storefront | `ghcr.io/nkastanas/retroinventorydifferent-storefront:latest` | 3001 |
+| Showcase | `ghcr.io/nkastanas/retroinventorydifferent-showcase:latest` | 3003 |
+| PostgreSQL | `postgres:15-alpine` | Internal only |
 
-1. **Admin Web App** - Next.js application for inventory management with AI chat assistant
-2. **Public Storefront** - Next.js application for public-facing shop
-3. **GraphQL API** - Express/Node.js backend with Prisma ORM
-4. **MCP Server** - Model Context Protocol server providing AI tools for inventory queries
+The Compose file does not include Traefik or another reverse proxy. Configure one separately if HTTPS or public internet access is required.
 
-## Prerequisites
+## First Deployment
 
-### For NAS/Server Deployment
-- Docker and Docker Compose installed on your NAS
-- Traefik running with a network (default: `traefik`)
-- DNS configured to point your subdomains to your NAS
-- Portainer (optional, for easier management)
+1. Clone the repository on the server:
 
-## Quick Start
-
-### 1. Clone the project
-
-```bash
-git clone <your-repo> inventory
-cd inventory
-```
-
-### 2. Create environment file
-
-```bash
-cp .env.example .env
-nano .env
-```
-
-Configure the following:
-
-```env
-# Admin web app domain (must match DNS)
-DOMAIN=inventory.yourdomain.com
-
-# Public storefront domain (must match DNS)
-SHOP_DOMAIN=shop.yourdomain.com
-
-# Database credentials (change the password!)
-POSTGRES_USER=inventory
-POSTGRES_PASSWORD=your_secure_password_here
-POSTGRES_DB=inventory
-
-# Traefik network name (check your Traefik config)
-TRAEFIK_NETWORK=traefik
-
-# Path for uploaded images (use absolute path on host)
-UPLOADS_PATH=/path/to/inventory/uploads
-
-# OpenAI API Key for chat assistant (required for AI features)
-OPENAI_API_KEY=sk-proj-your-key-here
-```
-
-### 3. Create uploads directory
-
-```bash
-mkdir -p /path/to/inventory/uploads
-chmod 755 /path/to/inventory/uploads
-```
-
-### 4. Deploy with Docker Compose
-
-```bash
-docker compose -f docker-compose.build.yml up -d --build
-```
-
-Or deploy via Portainer by creating a new stack and pasting the contents of `docker-compose.build.yml`.
-
-## Synology NAS (Simple, No Traefik)
-
-Use `docker-compose.simple.yml` for a straightforward setup without a reverse proxy.
-
-### Why use SSH instead of Container Station GUI
-
-Container Station's GUI import does not reliably create custom Docker networks. When it fails, containers start on separate default bridges and **cannot communicate by service name** — you'll see errors like `Can't reach database server at postgres:5432` even though all containers appear to be running. Using `docker compose` from the CLI avoids this entirely.
-
-### Setup steps
-
-1. **Enable SSH on your NAS** — Control Panel → Terminal & SNMP → Enable SSH
-2. **SSH in** and navigate to where you want to store the project:
    ```bash
-   ssh admin@your-nas-ip
-   mkdir -p /volume1/docker/inventory
-   cd /volume1/docker/inventory
+   git clone https://github.com/nkastanas/RetroInventoryDifferent.git
+   cd RetroInventoryDifferent
    ```
-3. **Create your `.env` file**:
+
+2. Create the environment file:
+
    ```bash
-   # Copy the example and edit it
-   curl -o .env.example https://raw.githubusercontent.com/wottle/InventoryDifferent2/main/.env.example
    cp .env.example .env
    nano .env
    ```
-   Set at minimum: `POSTGRES_PASSWORD`, `AUTH_PASSWORD`, `JWT_SECRET`.
 
-4. **Download the compose file**:
-   ```bash
-   curl -o docker-compose.simple.yml https://raw.githubusercontent.com/wottle/InventoryDifferent2/main/docker-compose.simple.yml
+   At minimum, set secure values for:
+
+   ```env
+   POSTGRES_PASSWORD=replace-with-a-secure-database-password
+   AUTH_USERNAME=admin
+   AUTH_PASSWORD=replace-with-a-secure-admin-password
+   JWT_SECRET=replace-with-a-random-secret-at-least-32-characters
+   UPLOADS_PATH=/absolute/path/to/inventory/uploads
    ```
 
-5. **Start the stack**:
+3. Create the uploads directory:
+
    ```bash
-   docker compose -f docker-compose.simple.yml up -d
+   mkdir -p /absolute/path/to/inventory/uploads
    ```
 
-6. **Check that all containers are healthy**:
+4. Pull and start the services:
+
    ```bash
-   docker compose -f docker-compose.simple.yml ps
+   docker compose pull
+   docker compose up -d
+   docker compose ps
    ```
-   All services should show `healthy` or `running` before you access the web app.
 
-### Synology firewall configuration
+Database migrations run automatically when the API container starts.
 
-The admin web app proxies all API traffic through port 3000 internally — you do **not** need to open port 4000 for the web app to function.
+## Updating Production
 
-| Port | Service | Open externally? |
-|------|---------|-----------------|
-| 3000 | Admin web app | **Yes** — required |
-| 3001 | Storefront | Optional |
-| 4000 | API (direct) | Optional — only needed for direct API access |
-| 5432 | PostgreSQL | **Never** — serious security risk |
+Pushing tested code to `main` builds new `:latest` images in GitHub Actions. Production is not updated automatically.
 
-In Synology's firewall (Control Panel → Security → Firewall), add a rule to allow port 3000 from your local subnet. Do not add a rule for port 5432.
-
-### Updating
-
-```bash
-cd /volume1/docker/inventory
-docker compose -f docker-compose.simple.yml pull
-docker compose -f docker-compose.simple.yml up -d
-```
-
----
-
-## Traefik Configuration
-
-The production compose file includes Traefik labels that:
-
-- **Admin App** (`DOMAIN`): Routes all requests except API paths to the Next.js admin web app
-- **API** (`DOMAIN`): Routes `/graphql`, `/upload`, `/uploads`, `/import`, `/export` to the Express API
-- **Storefront** (`SHOP_DOMAIN`): Routes all requests to the public-facing storefront on a separate subdomain
-- Enable HTTPS with automatic certificate management via Let's Encrypt
-- Set up CORS headers for API access
-
-### Required Traefik Setup
-
-Make sure your Traefik has:
-
-1. **An entrypoint named `websecure`** (typically port 443)
-2. **A certificate resolver** (e.g., `letsencrypt`)
-3. **An external network** that containers can join
-
-Example Traefik static config snippet:
-```yaml
-entryPoints:
-  web:
-    address: ":80"
-  websecure:
-    address: ":443"
-
-certificatesResolvers:
-  letsencrypt:
-    acme:
-      email: your-email@example.com
-      storage: /letsencrypt/acme.json
-      httpChallenge:
-        entryPoint: web
-```
-
-## Updating
-
-To update the application:
+On the production server:
 
 ```bash
 cd /path/to/inventory
-git pull
-docker compose -f docker-compose.build.yml up -d --build
+docker compose pull
+docker compose up -d
+docker compose ps
 ```
 
-## Backup
+Compose recreates application containers whose images changed. It preserves the PostgreSQL volume and uploads bind mount. Do not run `docker compose down -v`; the `-v` option removes the database volume.
 
-### Database
+## Ports
+
+Override host ports in `.env` when required:
+
+```env
+API_PORT=4000
+WEB_PORT=3000
+STOREFRONT_PORT=3001
+SHOWCASE_PORT=3003
+```
+
+PostgreSQL is not published to the host. Keep it internal.
+
+## Persistent Data
+
+The deployment stores data in two places:
+
+- PostgreSQL uses the Compose volume `invdif_simple_postgres_data`.
+- Photos and uploaded files use the host directory configured by `UPLOADS_PATH`.
+
+Both must be backed up.
+
+### Database backup
+
 ```bash
-docker exec inventory-db pg_dump -U inventory inventory > backup.sql
+docker exec inventory-db sh -c 'pg_dump --no-owner --no-acl -U "$POSTGRES_USER" "$POSTGRES_DB"' > inventory-production.sql
 ```
 
-### Images
-The uploads are stored at `UPLOADS_PATH`. Include this in your NAS backup routine.
+### Uploads backup
+
+Back up the directory configured by `UPLOADS_PATH` with your normal filesystem backup tool.
+
+## Local Source Build
+
+The local stack is isolated from production and builds the API and admin web application from the checked-out source:
+
+```bash
+docker compose -f docker-compose.local.yml up -d --build
+docker compose -f docker-compose.local.yml ps
+```
+
+Default local access:
+
+- API: `http://localhost:4000`
+- Admin web: `http://localhost:4001`
+- Login: `admin` / `admin`
+
+The local stack uses the Compose project name `retroinventory-local` and separate `local_postgres_data` and `local_uploads` volumes.
+
+## Automated-Test Database
+
+`docker-compose.test.yml` creates a disposable PostgreSQL database on port 5433. Its database directory uses `tmpfs`, so its contents disappear when the container is removed.
+
+```bash
+docker compose -f docker-compose.test.yml up -d --wait
+docker compose -f docker-compose.test.yml down
+```
 
 ## Troubleshooting
 
-### Check container logs
+Check container state and recent logs:
+
 ```bash
-docker logs inventory-api
-docker logs inventory-web
-docker logs inventory-db
+docker compose ps
+docker compose logs --tail=100 api web storefront showcase postgres
 ```
 
-### Verify Traefik routing
+Confirm the configured images:
+
 ```bash
-# Check if Traefik sees the containers
-docker exec traefik traefik healthcheck
+docker compose config --images
 ```
 
-### Database connection issues
-Ensure the database is healthy before the API starts:
+Confirm the image used by a running container:
+
 ```bash
-docker compose -f docker-compose.build.yml ps
+docker inspect inventory-api --format '{{.Config.Image}}'
 ```
 
-### CORS issues
-If you see CORS errors in the browser console, verify:
-1. The `DOMAIN` in `.env` matches your actual domain
-2. Traefik CORS middleware is applied correctly
+The production file requires `POSTGRES_PASSWORD`. Validate configuration without starting containers:
 
-## Architecture
-
+```bash
+docker compose config --quiet
 ```
-┌───────────────────────────────────────────┐
-│                Client Layer               │
-│  ┌──────────────┐    ┌──────────────┐     │
-│  │  Admin Web   │    │  Storefront  │     │
-│  │  (Browser)   │    │  (Browser)   │     │
-│  └──────┬───────┘    └──────┬───────┘     │
-└─────────┼───────────────────┼─────────────┘
-          │                   │
-          ▼                   ▼
-┌─────────┐  ┌─────────┐      ┌─────────────┐
-│inventory│  │inventory│      │  inventory  │
-│  -web   │  │storefront      │    -api     │
-│(Next.js)│  │(Next.js)│      │  (Express)  │
-└─────────┘  └─────────┘      └──────┬──────┘
-                                     │
-                                     ▼
-                              ┌─────────────┐
-                              │  inventory  │
-                              │    -db      │
-                              │ (Postgres)  │
-                              └──────┬──────┘
-                                     │
-                              ┌──────┴──────┐
-                              │             │
-                              ▼             ▼
-                        ┌──────────┐  ┌──────────┐
-                        │ /uploads │  │Templates │
-                        │ (volume) │  │  (seed)  │
-                        └──────────┘  └──────────┘
-```
-
-### Component Details
-
-- **Admin Web**: Full-featured inventory management interface with AI chat assistant
-- **Storefront**: Public-facing shop for listing items for sale
-- **API**: GraphQL API serving all clients with Prisma ORM
-- **MCP Server**: Provides AI tools for searching devices, getting details, and financial summaries
-- **Database**: PostgreSQL with device templates and categories
-- **Uploads**: Shared volume for device images
-
-### AI Chat Assistant
-
-The admin web app includes an AI-powered chat assistant that can:
-- Search your inventory by various criteria
-- Provide detailed information about specific devices
-- Generate financial summaries and reports
-- Answer questions about your vintage computer collection
-
-The chat uses OpenAI's GPT-5-4 model and requires an `OPENAI_API_KEY` to function.
-
-## Portainer Deployment
-
-1. Go to Portainer → Stacks → Add Stack
-2. Name: `inventory`
-3. Build method: Upload or paste `docker-compose.prod.yml` (pre-built images + Traefik) or `docker-compose.build.yml` (build from source)
-4. Add environment variables from `.env`
-5. Deploy the stack
-
-## DNS Configuration
-
-You'll need to configure DNS records for both domains:
-
-```
-A    inventory.yourdomain.com    →  Your server IP
-A    shop.yourdomain.com         →  Your server IP
-```
-
-Or use CNAME records if pointing to a dynamic DNS hostname.

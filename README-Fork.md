@@ -480,40 +480,15 @@ web UI on port 3000
 
 storefront on port 3001
 
-The upstream docker-compose.build.yml builds from source, but it is currently designed around a Traefik deployment.
-
-Because we want a simple Docker-only workflow, one of our first small changes should be:
-
-docker-compose.dev.yml
-
-It should:
-
-build api/ locally
-
-build web/ locally
-
-optionally build storefront/
-
-run PostgreSQL
-
-expose direct localhost ports
-
-use development-only Docker volumes
-
-use development-only uploads
-
-not require Traefik
-
-never reuse production volumes
+The fork now uses `docker-compose.local.yml` for an isolated local source build. It builds the API and admin web app, runs PostgreSQL, exposes direct localhost ports, and uses development-only database and uploads volumes. It does not use Traefik or production storage.
 
 Target usage:
 
-docker compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.local.yml up -d --build
 
 Target services:
 
-http://localhost:3000   web
-http://localhost:3001   storefront
+http://localhost:4001   web
 http://localhost:4000   API/GraphQL
 
 8. Production and Development Data Separation
@@ -717,7 +692,7 @@ Phase 0 — Baseline
 
 Phase 1 — Safety
 
-[ ] docker-compose.dev.yml
+[x] docker-compose.local.yml
 [ ] Full Backup
 [ ] Full Restore
 [ ] Portable JSONL export
@@ -800,9 +775,7 @@ The upstream development guide explicitly recommends forking and creating featur
 
 Upstream tests include unit tests and Playwright E2E tests.
 
-docker-compose.build.yml supports building the application from source.
-
-The build compose currently expects Traefik, hence our planned simple docker-compose.dev.yml.
+The fork's `docker-compose.local.yml` builds the API and admin web application from source without Traefik.
 
 The project is CC BY-NC 4.0 licensed.
 
@@ -811,8 +784,9 @@ Relevant upstream files:
 README.md
 CONTRIBUTING.md
 LICENSE.md
-docker-compose.build.yml
-docker-compose.simple.yml
+docker-compose.yml
+docker-compose.local.yml
+docker-compose.test.yml
 .env.example
 api/prisma/schema.prisma
 api/prisma/migrations/

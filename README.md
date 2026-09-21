@@ -23,32 +23,27 @@ A self-hosted inventory management system for vintage computer collections. Trac
 
 ## Docker Images
 
-Pre-built multi-architecture images (amd64 + arm64) are published to Docker Hub:
+GitHub Actions publishes these Linux/AMD64 images to GitHub Container Registry whenever tested code is pushed to `main`:
 
 ```
-wottle/inventory-api:latest
-wottle/inventory-web:latest
-wottle/inventory-storefront:latest (optional — only if wanting a shop website)
-wottle/inventory-mcp:latest        (optional — AI assistant integration only)
-wottle/inventory-retro:latest      (optional — vintage-compatible, no-JavaScript web UI)
+ghcr.io/nkastanas/retroinventorydifferent-api:latest
+ghcr.io/nkastanas/retroinventorydifferent-web:latest
+ghcr.io/nkastanas/retroinventorydifferent-storefront:latest
+ghcr.io/nkastanas/retroinventorydifferent-showcase:latest
 ```
 
 Database migrations run automatically on every container start — no manual migration step needed when updating.
-
-Additionally, an example implementation of a umami server in docker-compose to capture usage analytics.
 
 ---
 
 ## Deployment
 
-### Option 1 — Simple (direct ports, no reverse proxy)
-
-Best for: local network, homelab without Traefik, quick evaluation.
+The supported production deployment exposes services directly on host ports. It does not include a reverse proxy.
 
 ```bash
-# 1. Grab files
-curl -O https://raw.githubusercontent.com/wottle/InventoryDifferent2/refs/heads/main/docker-compose.simple.yml
-curl -O https://raw.githubusercontent.com/wottle/InventoryDifferent2/refs/heads/main/.env.example
+# 1. Clone the repository
+git clone https://github.com/nkastanas/RetroInventoryDifferent.git
+cd RetroInventoryDifferent
 
 # 2. Create an uploads directory for device images
 mkdir -p ./uploads
@@ -58,89 +53,27 @@ cp .env.example .env
 # Edit .env — at minimum set POSTGRES_PASSWORD and AUTH_PASSWORD
 nano .env
 
-# 4. Start
-docker compose -f docker-compose.simple.yml up -d
+# 4. Pull and start the production images
+docker compose pull
+docker compose up -d
 ```
 
 Services will be available at:
+
 - Web: `http://your-host:3000`
 - Storefront: `http://your-host:3001`
+- Showcase: `http://your-host:3003`
 - API: `http://your-host:4000/graphql`
 
-> **Remote access:** The web app resolves the API URL from the browser's origin automatically. Set `AUTH_URL` in your `.env` for clients that connect to the API from another device.
+Override these defaults with `API_PORT`, `WEB_PORT`, `STOREFRONT_PORT`, and `SHOWCASE_PORT` in `.env`.
 
-> **MCP server:** If you plan to connect your collection up to an AI agent, you should uncomment the mcp service in the docker-compose file. The MCP server is available at `http://your-host:3002/mcp` and can be used with AI assistants that support MCP servers. You'll also need to set the `MCP_TOKEN` environment variable in your `.env` file.
+> **Asset tagging note:** Generated QR codes embed the server URL. Use a stable hostname or address if those codes must remain valid outside your local network.
 
-> **Retro web UI:** For a vintage-compatible, no-JavaScript inventory browser (great for old browsers like Netscape or early IE), uncomment the `retro` service in the docker-compose file. Available at `http://your-host:3004`. Set `RETRO_THEME` to `system7` (default), `earlyweb`, or `platinum` to choose the visual style.
-
-> **Asset tagging note:** If you use the QR code asset tagging feature, the generated codes embed your server's URL. A local IP address (`192.168.x.x`) or a hostname that may change will cause those QR codes to stop working when scanned from a device that isn't on your home network, or after your IP changes. If you plan to use asset tagging, Option 2 (a persistent public domain) is strongly recommended so your QR codes remain valid long-term.
-
----
-
-### Option 2 — Traefik with HTTPS (recommended for internet-facing installs)
-
-Best for: NAS, VPS, or home server with a public domain and Traefik already running.
-
-**Prerequisites:**
-- Traefik running with an external Docker network (default name: `web`)
-- DNS A records pointing your domains to your server
-- A certificate resolver in Traefik (e.g., Let's Encrypt)
-
-```bash
-# 1. Grab files
-curl -O https://raw.githubusercontent.com/wottle/InventoryDifferent2/main/docker-compose.prod.yml
-curl -O https://raw.githubusercontent.com/wottle/InventoryDifferent2/main/.env.example
-
-# 2. Configure
-cp .env.example .env
-nano .env
-
-# 3. Create uploads directory (use absolute path)
-mkdir -p /data/inventory/uploads
-
-# 4. Deploy
-docker compose -f docker-compose.prod.yml up -d
-```
-
-The compose file routes traffic so:
-- `DOMAIN` → admin web app, and API paths (`/graphql`, `/upload`, `/uploads`, `/import`, `/export`, `/auth`, `/generate-image`)
-- `SHOP_DOMAIN` → public storefront
-- `SHOWCASE_DOMAIN` → public editorial showcase site (only if the `showcase` service is uncommented in `docker-compose.prod.yml`)
-
-**Traefik version:** `docker-compose.prod.yml` uses Traefik v1.7 label syntax (`traefik.frontend.rule`, `traefik.port`). If you're running Traefik v2+, you'll need to update the labels to use the v2 router/service/middleware syntax.
-
-**Traefik network name:** The compose file uses an external network named `web`. If your Traefik uses a different name, update the `networks` section in `docker-compose.prod.yml`.
-
-Example Traefik v1.7 static config (if you need to set one up):
-```yaml
-defaultEntryPoints:
-  - http
-  - https
-
-entryPoints:
-  http:
-    address: ":80"
-    redirect:
-      entryPoint: https
-  https:
-    address: ":443"
-    tls: {}
-
-acme:
-  email: your-email@example.com
-  storage: /letsencrypt/acme.json
-  entryPoint: https
-  httpChallenge:
-    entryPoint: http
-```
-
----
-
-### Option 3 — Portainer Stack
+### Portainer Stack
 
 1. Go to **Portainer → Stacks → Add Stack**
 2. Name the stack `inventory`
-3. Paste the contents of `docker-compose.simple.yml` (or `docker-compose.prod.yml` for Traefik)
+3. Paste the contents of `docker-compose.yml`
 4. Add your environment variables in the "Environment variables" section (see below)
 5. Deploy
 
@@ -173,23 +106,20 @@ acme:
 | `CURRENCY` | Currency for financial values in the web app (default: follows language — `USD` for `en`, `EUR` for `de`/`fr`/`es`). Set independently to use a different currency with any language, e.g. `CURRENCY=EUR` with `LANGUAGE=en` for English UI with euros. Supported: `USD`, `EUR`, `GBP`, `CAD`, `AUD`, `JPY`, `MXN`, `ARS`, `CLP` |
 | `OPENAI_API_KEY` | Enables AI product image generation|
 | `ANTHROPIC_API_KEY` | Enables the AI chat assistant |
-| `MCP_TOKEN` | Optional token for the MCP server (token required for auth MCP server from AI agent) |
 | `CONTACT_EMAIL` | Email shown on the storefront contact button (default: `store@example.com`) |
 | `EXTERNAL_TEMPLATES_ENABLED` | Initial default for the remote template catalog (`true` by default). Once toggled in the web Settings page the DB value takes precedence and this env var is ignored. |
-| `RETRO_THEME` | Visual theme for the retro web UI: `system7` (default, Classic Mac look), `earlyweb` (1996 web aesthetic), or `platinum` (matches main web app style). Only applies if the `retro` service is enabled. |
 
-### Traefik / Domain (prod deployment only)
+### Domains (optional)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
 | `DOMAIN` | — | Domain for the admin web app (e.g., `inventory.example.com`) |
 | `SHOP_DOMAIN` | — | Domain for the public storefront (e.g., `shop.example.com`) |
-| `SHOWCASE_DOMAIN` | — | Domain for the public showcase site (e.g., `showcase.example.com`) — only needed if the `showcase` service is enabled |
-| `RETRO_DOMAIN` | — | Domain for the retro web UI (e.g., `retro.example.com`) — only needed if the `retro` service is enabled with Traefik |
+| `SHOWCASE_DOMAIN` | — | Domain for the public showcase site (e.g., `showcase.example.com`) |
 
 ### Analytics (optional)
 
-Set these directly on the web, storefront, or showcase containers in Portainer (not in `.env`):
+Set these values in `.env`:
 
 | Variable | Description |
 |----------|-------------|
@@ -208,7 +138,7 @@ The application supports **English**, **German (Deutsch)**, **French (Français)
 
 Language for the web app, storefront, and showcase is controlled by the `LANGUAGE` environment variable on their respective containers. Supported values: `en` (default), `de`, `fr`, `es`.
 
-Set it in your `.env` file (applies to all three services via docker-compose):
+Set it in your `.env` file (Compose passes it to the applicable front ends):
 
 ```env
 LANGUAGE=de
@@ -217,7 +147,7 @@ LANGUAGE=de
 Then restart the containers for the change to take effect:
 
 ```bash
-docker compose -f docker-compose.simple.yml up -d
+docker compose up -d
 ```
 
 The language is applied at runtime — no rebuild required.
@@ -275,10 +205,8 @@ In Repair → Repaired → Returned
 
 ```bash
 # Pull new images and restart
-docker compose -f docker-compose.simple.yml pull
-docker compose -f docker-compose.simple.yml up -d
-
-# (or docker-compose.prod.yml for Traefik deployments)
+docker compose pull
+docker compose up -d
 ```
 
 Migrations run automatically on startup — your data is preserved.
@@ -332,29 +260,9 @@ The server communicates over **stdio** (not HTTP), so agents launch it as a subp
 | `add_note` | Append a timestamped note to a device |
 | `add_maintenance_task` | Log a completed maintenance task (label, date, notes, optional cost) |
 
-### Option A — Docker exec into the running container (recommended for NAS deployments)
+### Run from source
 
-If the MCP container is already running, point your agent at it with `docker exec`:
-
-**Claude / Claude Code** — add to your project's `.mcp.json` or `~/.claude.json`:
-
-```json
-{
-  "mcpServers": {
-    "inventory": {
-      "command": "docker",
-      "args": ["exec", "-i", "inventory-mcp", "node", "dist/index.js"]
-    }
-  }
-}
-```
-
-The `DATABASE_URL` is already set inside the container, so no extra env vars are needed.
-
-> **Remote server:** If Docker is on a remote machine, prefix with SSH:
-> `"command": "ssh"`, `"args": ["user@yourserver", "docker", "exec", "-i", "inventory-mcp", "node", "dist/index.js"]`
-
-### Option B — Run locally against your database
+The MCP server is not part of the production Compose stack and no fork-specific MCP image is published. Run it separately from source when needed:
 
 ```bash
 cd mcp-server
@@ -372,23 +280,6 @@ npm run build
       "env": {
         "DATABASE_URL": "postgresql://inventory:password@localhost:5432/inventory"
       }
-    }
-  }
-}
-```
-
-### Option C — Docker image directly
-
-```json
-{
-  "mcpServers": {
-    "inventory": {
-      "command": "docker",
-      "args": [
-        "run", "--rm", "-i",
-        "-e", "DATABASE_URL=postgresql://user:pass@your-db-host:5432/inventory",
-        "wottle/inventory-mcp:latest"
-      ]
     }
   }
 }
@@ -431,7 +322,5 @@ Confirm `AUTH_PASSWORD` is set. If `AUTH_USERNAME` is set, both fields are requi
 **Images not showing**
 Check `UPLOADS_PATH` points to a writable directory and the volume mount is correct.
 
-**Traefik not routing**
-- Confirm the external network exists: `docker network ls | grep web`
-- Check Traefik sees the containers: `docker logs traefik`
-- Verify DNS is pointing to the right IP
+**Container does not start**
+Run `docker compose ps` and `docker compose logs --tail=100 <service>` to inspect its health and recent output.

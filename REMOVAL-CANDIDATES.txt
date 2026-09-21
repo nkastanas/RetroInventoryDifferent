@@ -136,25 +136,26 @@ showcase/exports/apple-laptops.json
 
 .github/workflows/publish.yml
 .github/workflows/retag.yml
-  These publish or retag upstream wottle/inventory-* images and use the upstream account
-  name. Remove/disable them if this fork will not publish images, or rewrite them for the
-  fork before use. publish.yml is especially important because it has automatic branch
-  triggers. Keep .github/workflows/test.yml, adjusting its component matrix only when an
-  optional application is removed.
+  Completed: publish.yml now publishes the fork's four Linux/AMD64 GHCR images, and the
+  obsolete upstream retag.yml workflow was removed. Keep .github/workflows/test.yml,
+  adjusting its component matrix only when an optional application is removed.
 
 
-6. DOCKER/ENVIRONMENT FILES TO CONSOLIDATE LATER
-------------------------------------------------
+6. DOCKER/ENVIRONMENT CONSOLIDATION
+----------------------------------
 
-These are REPLACE candidates, not immediate deletions. First create and test the fork's
-canonical development and production Compose files, update the documentation, and only
-then remove redundant upstream variants.
+Completed: the fork now keeps three Compose definitions:
 
 docker-compose.yml
-docker-compose.build.yml
-docker-compose.simple.yml
-  Overlapping upstream Compose variants. They can be removed after docker-compose.dev.yml
-  and docker-compose.prod.yml fully cover the supported local and production workflows.
+  Production deployment using the fork's GHCR images.
+
+docker-compose.local.yml
+  Isolated local source build for the API and admin web app.
+
+docker-compose.test.yml
+  Disposable PostgreSQL environment for automated tests.
+
+The redundant upstream build, production/Traefik, and simple/Wottle variants were removed.
 
 docker/init-databases.sh
   Unreferenced PostgreSQL init script that creates an "umami" database. No current
@@ -162,17 +163,8 @@ docker/init-databases.sh
   does not mount it independently.
 
 .env.example
-  Keep for now. It can be removed after sanitized .env.dev.example and .env.prod.example
-  replacements are committed and all documentation points to them. Real .env files and
-  secrets must remain ignored and uncommitted.
-
-docker-compose.prod.yml
-  Do not simply delete this file. Rewrite it as the supported production definition,
-  validate it, and remove only if production deployment moves to another documented file.
-
-docker-compose.test.yml
-  Keep. It provides a distinct automated-test environment rather than duplicating the
-  development or production workflow.
+  Keep as the sanitized production environment template. Real .env files and secrets
+  remain ignored and uncommitted.
 
 
 7. OPTIONAL AI IMAGE-GENERATION FEATURE
